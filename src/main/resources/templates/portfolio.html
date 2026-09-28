@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="The portfolio, exhibitions, and contact details of visual artist Mira Vale.">
+  <title>Mira Vale — Visual Artist</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Italiana&display=swap" rel="stylesheet">
+  <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+  <header class="site-header">
+    <a class="logo" href="#works" aria-label="Mira Vale home">Mira Vale</a>
+    <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="main-nav">
+      <span></span><span></span><span class="sr-only">Toggle menu</span>
+    </button>
+    <nav id="main-nav" class="main-nav" aria-label="Main navigation">
+      <button class="nav-link active" type="button" data-tab="works" aria-selected="true">Works</button>
+      <button class="nav-link" type="button" data-tab="commissions" aria-selected="false">Commissions</button>
+      <button class="nav-link" type="button" data-tab="exhibitions" aria-selected="false">Exhibitions</button>
+      <button class="nav-link" type="button" data-tab="contact" aria-selected="false">Contact</button>
+    </nav>
+  </header>
+
+  <main>
+    <section id="works" class="tab-panel active" aria-labelledby="works-heading">
+      <div class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow">Visual artist · Vienna</p>
+          <h1 id="works-heading">Finding stillness<br>in <em>motion.</em></h1>
+          <p class="intro">Mira Vale explores memory, place, and the quiet tension between natural and constructed worlds.</p>
+          <a class="text-link" href="#gallery">Selected works <span>↓</span></a>
+        </div>
+        <div class="hero-art artwork artwork-hero" role="img" aria-label="Abstract artwork in cobalt blue and warm orange">
+          <span class="shape shape-one"></span><span class="shape shape-two"></span><span class="work-number">Studio / 2026</span>
+        </div>
+      </div>
+      <div id="gallery" class="gallery-heading"><h2>Selected works</h2><p>Archive</p></div>
+      <div class="gallery-grid">
+        <p class="empty-state" th:if="${works.empty}">New work is being prepared. Please visit again soon.</p>
+        <article class="work-card" th:each="work : ${works}">
+          <div class="artwork"><img class="artwork-image" th:src="@{'/uploads/' + ${work.imageFilename}}" th:alt="${work.title}"></div>
+          <div class="work-meta">
+            <h3 th:text="${work.title}">Artwork title</h3>
+            <p><span th:text="${work.description}">Description</span><br><span th:text="${#temporals.format(work.createdDate, 'yyyy')}">2026</span></p>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section id="commissions" class="tab-panel" aria-labelledby="commissions-heading" hidden>
+      <div class="page-intro">
+        <p class="eyebrow">Made together</p>
+        <h1 id="commissions-heading">Commissioned<br><em>works.</em></h1>
+        <p class="intro">Selected pieces made for private collectors, public spaces, and creative partners.</p>
+      </div>
+      <div class="gallery-grid">
+        <p class="empty-state" th:if="${commissions.empty}">Commissioned work will appear here soon.</p>
+        <article class="work-card" th:each="work : ${commissions}">
+          <div class="artwork"><img class="artwork-image" th:src="@{'/uploads/' + ${work.imageFilename}}" th:alt="${work.title}"></div>
+          <div class="work-meta">
+            <h3 th:text="${work.title}">Commission title</h3>
+            <p><span th:text="${work.description}">Description</span><br><span th:text="${#temporals.format(work.createdDate, 'yyyy')}">2026</span></p>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section id="exhibitions" class="tab-panel" aria-labelledby="exhibitions-heading" hidden>
+      <div class="page-intro"><p class="eyebrow">On view</p><h1 id="exhibitions-heading">Next<br><em>exhibitions.</em></h1></div>
+      <div class="exhibition-list">
+        <p class="empty-state" th:if="${exhibitions.empty}">New exhibition dates will be announced here.</p>
+        <article class="exhibition" th:each="exhibition : ${exhibitions}">
+          <time th:datetime="${exhibition.startDate}" th:text="${#temporals.format(exhibition.startDate, 'dd MMM yyyy')}">18 Oct 2026</time>
+          <div>
+            <p class="difficulty" th:aria-label="|Difficulty ${exhibition.difficulty} out of 5|" th:text="${#strings.repeat('★', exhibition.difficulty) + #strings.repeat('☆', 5 - exhibition.difficulty)}">★★★☆☆</p>
+            <h2 th:text="${exhibition.title}">Exhibition title</h2>
+            <p><span th:text="${exhibition.venue}">Venue</span><br>
+              <span th:text="${#temporals.format(exhibition.startDate, 'dd MMMM') + ' — ' + #temporals.format(exhibition.endDate, 'dd MMMM yyyy')}">Dates</span><br>
+              <span th:text="${exhibition.details}">Details</span>
+            </p>
+          </div>
+          <a th:href="@{'https://www.google.com/maps/search/?api=1&query=' + ${exhibition.venue}}" target="_blank" rel="noreferrer" th:aria-label="|View ${exhibition.venue} on map|">↗</a>
+        </article>
+      </div>
+    </section>
+
+    <section id="contact" class="tab-panel" aria-labelledby="contact-heading" hidden>
+      <div class="contact-layout">
+        <div class="page-intro">
+          <p class="eyebrow">Get in touch</p>
+          <h1 id="contact-heading">Let’s start a<br><em>conversation.</em></h1>
+          <p class="intro">For commissions, collaborations, studio visits, or available works, send a note below.</p>
+          <div class="contact-details"><a href="mailto:studio@miravale.art">studio@miravale.art</a><p>Studio 17, Lichtgasse 8<br>1070 Vienna, Austria</p></div>
+        </div>
+        <form class="contact-form" id="contact-form">
+          <label for="name">Name</label><input id="name" name="name" type="text" autocomplete="name" required>
+          <label for="email">Email</label><input id="email" name="email" type="email" autocomplete="email" required>
+          <label for="message">Message</label><textarea id="message" name="message" rows="5" required></textarea>
+          <button class="submit-button" type="submit">Send message <span>↗</span></button>
+          <p class="form-status" role="status" aria-live="polite"></p>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <footer><p>© <span id="year"></span> Mira Vale</p><div><a href="#">Instagram</a><a href="#">Vimeo</a><a th:href="@{/admin}">Studio login</a></div></footer>
+  <script th:src="@{/js/script.js}"></script>
+</body>
+</html>

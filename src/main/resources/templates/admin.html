@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Studio Admin — Mira Vale</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Italiana&display=swap" rel="stylesheet">
+  <link rel="stylesheet" th:href="@{/css/admin.css}">
+</head>
+<body>
+  <header>
+    <a class="logo" th:href="@{/}">Mira Vale</a>
+    <div><a th:href="@{/}">View portfolio ↗</a>
+      <form th:action="@{/logout}" method="post"><button type="submit">Log out</button></form>
+    </div>
+  </header>
+  <main>
+    <div class="intro">
+      <p class="eyebrow">Private studio</p>
+      <h1>Portfolio manager</h1>
+      <p th:if="${success}" class="notice" th:text="${success}"></p>
+    </div>
+
+    <div class="forms">
+      <section>
+        <h2>Add artwork</h2>
+        <form th:action="@{/admin/artworks}" th:object="${artwork}" method="post" enctype="multipart/form-data">
+          <label for="art-title">Title</label>
+          <input id="art-title" th:field="*{title}" required maxlength="150">
+          <p class="error" th:errors="*{title}"></p>
+          <label for="description">Description</label>
+          <textarea id="description" th:field="*{description}" rows="4" required maxlength="2000"></textarea>
+          <p class="error" th:errors="*{description}"></p>
+          <label for="created-date">Date created</label>
+          <input id="created-date" type="date" th:field="*{createdDate}" required>
+          <p class="error" th:errors="*{createdDate}"></p>
+          <label for="image">Image</label>
+          <input id="image" type="file" name="image" accept="image/jpeg,image/png,image/webp,image/gif" required>
+          <p class="error" th:errors="*{imageFilename}"></p>
+          <label class="check"><input type="checkbox" th:field="*{commissioned}"> This is a commissioned work</label>
+          <button class="primary" type="submit">Add artwork</button>
+        </form>
+      </section>
+
+      <section>
+        <h2>Add exhibition</h2>
+        <form th:action="@{/admin/exhibitions}" th:object="${exhibition}" method="post">
+          <label for="exhibition-title">Title</label>
+          <input id="exhibition-title" th:field="*{title}" required maxlength="150">
+          <p class="error" th:errors="*{title}"></p>
+          <label for="venue">Venue</label>
+          <input id="venue" th:field="*{venue}" required maxlength="150">
+          <p class="error" th:errors="*{venue}"></p>
+          <div class="date-row">
+            <div><label for="start-date">Starts</label><input id="start-date" type="date" th:field="*{startDate}" required></div>
+            <div><label for="end-date">Ends</label><input id="end-date" type="date" th:field="*{endDate}" required></div>
+          </div>
+          <p class="error" th:errors="*{startDate}"></p>
+          <p class="error" th:errors="*{endDate}"></p>
+          <label for="details">Details</label>
+          <textarea id="details" th:field="*{details}" rows="4" required maxlength="2000"></textarea>
+          <p class="error" th:errors="*{details}"></p>
+          <label for="difficulty">Difficulty</label>
+          <select id="difficulty" th:field="*{difficulty}">
+            <option value="1">★☆☆☆☆</option><option value="2">★★☆☆☆</option>
+            <option value="3">★★★☆☆</option><option value="4">★★★★☆</option><option value="5">★★★★★</option>
+          </select>
+          <p class="error" th:errors="*{difficulty}"></p>
+          <button class="primary" type="submit">Add exhibition</button>
+        </form>
+      </section>
+    </div>
+
+    <section class="records">
+      <h2>Artworks</h2>
+      <p th:if="${artworks.empty}" class="muted">No artworks added yet.</p>
+      <article th:each="item : ${artworks}">
+        <img th:src="@{'/uploads/' + ${item.imageFilename}}" th:alt="${item.title}">
+        <div><strong th:text="${item.title}"></strong><small th:text="${item.commissioned ? 'Commission · ' : 'Work · '} + ${#temporals.format(item.createdDate, 'dd MMM yyyy')}"></small></div>
+        <form th:action="@{'/admin/artworks/' + ${item.id} + '/delete'}" method="post"><button class="delete" type="submit">Delete</button></form>
+      </article>
+    </section>
+
+    <section class="records">
+      <h2>Exhibitions</h2>
+      <p th:if="${exhibitions.empty}" class="muted">No exhibitions added yet.</p>
+      <article th:each="item : ${exhibitions}">
+        <div><strong th:text="${item.title}"></strong><small th:text="${item.venue + ' · ' + #temporals.format(item.startDate, 'dd MMM yyyy')}"></small></div>
+        <span class="stars" th:text="${#strings.repeat('★', item.difficulty) + #strings.repeat('☆', 5 - item.difficulty)}"></span>
+        <form th:action="@{'/admin/exhibitions/' + ${item.id} + '/delete'}" method="post"><button class="delete" type="submit">Delete</button></form>
+      </article>
+    </section>
+  </main>
+</body>
+</html>

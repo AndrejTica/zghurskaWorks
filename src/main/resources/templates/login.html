@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Studio Login — Mira Vale</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Italiana&display=swap" rel="stylesheet">
+  <link rel="stylesheet" th:href="@{/css/admin.css}">
+</head>
+<body class="login-page">
+  <main class="login-card">
+    <a class="logo" th:href="@{/}">Mira Vale</a>
+    <p class="eyebrow">Private studio</p>
+    <h1>Welcome back.</h1>
+    <p class="error" th:if="${param.error}">The username or password is incorrect.</p>
+    <p class="notice" th:if="${param.logout}">You have been logged out.</p>
+    <form th:action="@{/login}" method="post">
+      <label for="username">Username</label>
+      <input id="username" name="username" autocomplete="username" required autofocus>
+      <label for="password">Password</label>
+      <input id="password" name="password" type="password" autocomplete="current-password" required>
+      <button class="primary" type="submit">Log in</button>
+    </form>
+  </main>
+</body>
+</html>
