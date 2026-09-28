@@ -6,6 +6,9 @@ services:
       DATABASE_URL: jdbc:h2:file:/app/data/portfolio
       ADMIN_USERNAME: ${ADMIN_USERNAME:?Set ADMIN_USERNAME in .env}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:?Set ADMIN_PASSWORD in .env}
+      MAIL_USERNAME: ${MAIL_USERNAME:?Set MAIL_USERNAME in .env}
+      MAIL_PASSWORD: ${MAIL_PASSWORD:?Set MAIL_PASSWORD in .env}
+      CONTACT_RECIPIENT: ${CONTACT_RECIPIENT:-ann.drago.2002@gmail.com}
       SPRING_THYMELEAF_CACHE: "true"
       UPLOAD_DIR: /app/data/uploads
     expose:

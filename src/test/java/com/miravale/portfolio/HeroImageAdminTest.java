@@ -45,21 +45,29 @@ class HeroImageAdminTest {
 
     @Test
     @WithMockUser(roles = "ADMIN")
-    void updatesLandingPageDescription() throws Exception {
+    void updatesLandingPageText() throws Exception {
+        String slogan = "Colour beyond the frame.";
         String description = "New introduction for Anna Zghurska.";
+        String address = "New Studio\nVienna, Austria";
 
-        mockMvc.perform(post("/admin/landing-description")
+        mockMvc.perform(post("/admin/landing-content")
+                        .param("landingPageSlogan", slogan)
                         .param("landingPageDescription", description)
+                        .param("studioAddress", address)
                         .with(csrf()))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/admin"));
 
-        assertThat(siteSettingsRepository.findById(SiteSettings.ID)
-                .orElseThrow()
-                .getLandingPageDescription()).isEqualTo(description);
+        SiteSettings settings = siteSettingsRepository.findById(SiteSettings.ID).orElseThrow();
+        assertThat(settings.getLandingPageSlogan()).isEqualTo(slogan);
+        assertThat(settings.getLandingPageDescription()).isEqualTo(description);
+        assertThat(settings.getStudioAddress()).isEqualTo(address);
         mockMvc.perform(get("/"))
                 .andExpect(status().isOk())
-                .andExpect(content().string(org.hamcrest.Matchers.containsString(description)));
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("Colour beyond the")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("frame.")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString(description)))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("New Studio")));
     }
 
     @Test

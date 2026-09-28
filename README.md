@@ -20,7 +20,12 @@ Edit `.env` and set your domain and a strong admin password:
 DOMAIN=portfolio.example.com
 ADMIN_USERNAME=artist
 ADMIN_PASSWORD=replace-with-a-long-random-password
+MAIL_USERNAME=ann.drago.2002@gmail.com
+MAIL_PASSWORD=replace-with-a-google-app-password
+CONTACT_RECIPIENT=ann.drago.2002@gmail.com
 ```
+
+For Gmail delivery, enable two-step verification on the sending Google account and create an app password. Use that 16-character app password as `MAIL_PASSWORD`, without spaces. Do not use the normal Google account password.
 
 Build and start the application:
 
@@ -36,4 +41,4 @@ Stop the stack with:
 docker compose down
 ```
 
-The Java application is available only to Caddy on the private Docker network. Database records are stored in an embedded H2 database. The database and uploaded images are retained in the `portfolio-data` Docker volume, while Caddy certificates are retained in `caddy-data`. JPEG, PNG, WebP, and GIF uploads are accepted up to 10 MB. The landing-page image can be replaced from the protected admin page.
+The Java application is available only to Caddy on the private Docker network. Database records are stored in an embedded H2 database. The database and uploaded images are retained in the `portfolio-data` Docker volume, while Caddy certificates are retained in `caddy-data`. JPEG, PNG, WebP, and GIF uploads are accepted up to 10 MB. The landing-page image can be replaced from the protected admin page. Contact form messages are delivered to `CONTACT_RECIPIENT` through the configured Gmail SMTP account.

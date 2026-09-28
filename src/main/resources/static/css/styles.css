@@ -98,6 +98,10 @@ h1 {
   line-height: .85;
 }
 h1 em { font-weight: 400; color: var(--accent); }
+.landing-slogan > span { white-space: pre-line; }
+.landing-slogan > em { margin-left: .2em; }
+.landing-slogan > em.new-line { display: block; margin-left: 0; }
+.landing-slogan > em.only-word { margin-left: 0; }
 .intro {
   max-width: 31rem;
   margin: 2rem 0;
@@ -243,7 +247,7 @@ h1 em { font-weight: 400; color: var(--accent); }
 .contact-layout .page-intro { padding: 0; }
 .contact-details { margin-top: 4rem; line-height: 1.6; }
 .contact-details a { font-family: var(--serif); font-size: 1.45rem; }
-.contact-details p { color: #77746a; }
+.contact-details p { color: #77746a; white-space: pre-line; }
 .contact-form { display: flex; flex-direction: column; }
 .contact-form label { margin: 1.4rem 0 .35rem; color: #6d6a62; font-size: .75rem; letter-spacing: .1em; text-transform: uppercase; }
 .contact-form input, .contact-form textarea {
@@ -271,6 +275,8 @@ h1 em { font-weight: 400; color: var(--accent); }
 }
 .submit-button:hover { background: var(--accent); }
 .form-status { min-height: 1.5rem; color: var(--accent); }
+.form-success { color: #34613f; }
+.form-error { color: #a43722; }
 
 .artwork-image {
   width: 100%;

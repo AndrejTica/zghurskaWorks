@@ -149,26 +149,42 @@ public class AdminController {
         return "redirect:/admin";
     }
 
-    @PostMapping("/admin/landing-description")
-    String updateLandingPageDescription(
+    @PostMapping("/admin/landing-content")
+    String updateLandingPageContent(
+            @RequestParam("landingPageSlogan") String landingPageSlogan,
             @RequestParam("landingPageDescription") String landingPageDescription,
+            @RequestParam("studioAddress") String studioAddress,
             RedirectAttributes redirectAttributes) {
+        String slogan = landingPageSlogan.trim();
         String description = landingPageDescription.trim();
-        if (!StringUtils.hasText(description)) {
-            redirectAttributes.addFlashAttribute("error", "Landing page description cannot be empty.");
+        String address = studioAddress.trim();
+        if (!StringUtils.hasText(slogan)
+                || !StringUtils.hasText(description)
+                || !StringUtils.hasText(address)) {
+            addLandingContentError(
+                    redirectAttributes,
+                    slogan,
+                    description,
+                    address,
+                    "Slogan, description, and studio address are required.");
             return "redirect:/admin";
         }
-        if (description.length() > 2000) {
-            redirectAttributes.addFlashAttribute(
-                    "error",
-                    "Landing page description cannot be longer than 2000 characters.");
+        if (slogan.length() > 300 || description.length() > 2000 || address.length() > 500) {
+            addLandingContentError(
+                    redirectAttributes,
+                    slogan,
+                    description,
+                    address,
+                    "Landing page text exceeds the allowed length.");
             return "redirect:/admin";
         }
 
         SiteSettings settings = siteSettingsRepository.findById(SiteSettings.ID).orElseGet(SiteSettings::new);
+        settings.setLandingPageSlogan(slogan);
         settings.setLandingPageDescription(description);
+        settings.setStudioAddress(address);
         siteSettingsRepository.save(settings);
-        redirectAttributes.addFlashAttribute("success", "Landing page description updated.");
+        redirectAttributes.addFlashAttribute("success", "Landing page text updated.");
         return "redirect:/admin";
     }
 
@@ -197,10 +213,38 @@ public class AdminController {
         model.addAttribute("exhibitions", exhibitionRepository.findAllByOrderByStartDateAsc());
         SiteSettings settings = siteSettingsRepository.findById(SiteSettings.ID).orElseGet(SiteSettings::new);
         model.addAttribute("heroImageFilename", settings.getHeroImageFilename());
-        model.addAttribute(
-                "landingPageDescription",
-                StringUtils.hasText(settings.getLandingPageDescription())
-                        ? settings.getLandingPageDescription()
-                        : SiteSettings.DEFAULT_LANDING_PAGE_DESCRIPTION);
+        if (!model.containsAttribute("landingPageSlogan")) {
+            model.addAttribute(
+                    "landingPageSlogan",
+                    StringUtils.hasText(settings.getLandingPageSlogan())
+                            ? settings.getLandingPageSlogan()
+                            : SiteSettings.DEFAULT_LANDING_PAGE_SLOGAN);
+        }
+        if (!model.containsAttribute("landingPageDescription")) {
+            model.addAttribute(
+                    "landingPageDescription",
+                    StringUtils.hasText(settings.getLandingPageDescription())
+                            ? settings.getLandingPageDescription()
+                            : SiteSettings.DEFAULT_LANDING_PAGE_DESCRIPTION);
+        }
+        if (!model.containsAttribute("studioAddress")) {
+            model.addAttribute(
+                    "studioAddress",
+                    StringUtils.hasText(settings.getStudioAddress())
+                            ? settings.getStudioAddress()
+                            : SiteSettings.DEFAULT_STUDIO_ADDRESS);
+        }
+    }
+
+    private void addLandingContentError(
+            RedirectAttributes redirectAttributes,
+            String slogan,
+            String description,
+            String address,
+            String errorMessage) {
+        redirectAttributes.addFlashAttribute("error", errorMessage);
+        redirectAttributes.addFlashAttribute("landingPageSlogan", slogan);
+        redirectAttributes.addFlashAttribute("landingPageDescription", description);
+        redirectAttributes.addFlashAttribute("studioAddress", address);
     }
 }

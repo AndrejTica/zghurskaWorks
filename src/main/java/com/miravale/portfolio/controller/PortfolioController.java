@@ -34,16 +34,50 @@ public class PortfolioController {
                 exhibitionRepository.findByEndDateGreaterThanEqualOrderByStartDateAsc(LocalDate.now()));
         SiteSettings settings = siteSettingsRepository.findById(SiteSettings.ID).orElseGet(SiteSettings::new);
         model.addAttribute("heroImageFilename", settings.getHeroImageFilename());
+        String slogan = valueOrDefault(
+                settings.getLandingPageSlogan(),
+                SiteSettings.DEFAULT_LANDING_PAGE_SLOGAN);
+        addSlogan(model, slogan);
         model.addAttribute(
                 "landingPageDescription",
-                StringUtils.hasText(settings.getLandingPageDescription())
-                        ? settings.getLandingPageDescription()
-                        : SiteSettings.DEFAULT_LANDING_PAGE_DESCRIPTION);
+                valueOrDefault(
+                        settings.getLandingPageDescription(),
+                        SiteSettings.DEFAULT_LANDING_PAGE_DESCRIPTION));
+        model.addAttribute(
+                "studioAddress",
+                valueOrDefault(settings.getStudioAddress(), SiteSettings.DEFAULT_STUDIO_ADDRESS));
         return "portfolio";
     }
 
     @GetMapping("/login")
     String login() {
         return "login";
+    }
+
+    private String valueOrDefault(String value, String defaultValue) {
+        return StringUtils.hasText(value) ? value : defaultValue;
+    }
+
+    private void addSlogan(Model model, String slogan) {
+        int lastWhitespace = -1;
+        for (int index = slogan.length() - 1; index >= 0; index--) {
+            if (Character.isWhitespace(slogan.charAt(index))) {
+                lastWhitespace = index;
+                break;
+            }
+        }
+
+        if (lastWhitespace < 0) {
+            model.addAttribute("landingPageSloganLead", "");
+            model.addAttribute("landingPageSloganEmphasis", slogan);
+            model.addAttribute("sloganEmphasisOnNewLine", false);
+            model.addAttribute("sloganHasLead", false);
+            return;
+        }
+
+        model.addAttribute("landingPageSloganLead", slogan.substring(0, lastWhitespace).stripTrailing());
+        model.addAttribute("landingPageSloganEmphasis", slogan.substring(lastWhitespace + 1).stripLeading());
+        model.addAttribute("sloganEmphasisOnNewLine", slogan.charAt(lastWhitespace) == '\n');
+        model.addAttribute("sloganHasLead", true);
     }
 }

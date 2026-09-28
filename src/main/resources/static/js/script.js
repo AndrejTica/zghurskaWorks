@@ -64,15 +64,4 @@ if (document.getElementById(initialTab)?.classList.contains("tab-panel")) {
   showTab(initialTab, false);
 }
 
-const contactForm = document.getElementById("contact-form");
-if (contactForm) {
-  contactForm.addEventListener("submit", (event) => {
-    event.preventDefault();
-    const form = event.currentTarget;
-    const name = form.elements.name.value.trim();
-    form.querySelector(".form-status").textContent = `Thank you${name ? `, ${name}` : ""}. Your message is ready to send.`;
-    form.reset();
-  });
-}
-
 document.getElementById("year").textContent = new Date().getFullYear();

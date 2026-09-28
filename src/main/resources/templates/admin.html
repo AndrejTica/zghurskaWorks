@@ -41,12 +41,19 @@
     </section>
 
     <section class="description-settings">
-      <h2>Landing page description</h2>
-      <form th:action="@{/admin/landing-description}" method="post">
+      <h2>Landing page text</h2>
+      <form th:action="@{/admin/landing-content}" method="post">
+        <label for="landing-page-slogan">Slogan</label>
+        <textarea id="landing-page-slogan" name="landingPageSlogan" rows="2" required maxlength="300"
+                  th:text="${landingPageSlogan}"></textarea>
+        <p class="muted">Line breaks are preserved and the final word is highlighted.</p>
         <label for="landing-page-description">Introduction</label>
         <textarea id="landing-page-description" name="landingPageDescription" rows="4" required maxlength="2000"
                   th:text="${landingPageDescription}"></textarea>
-        <button class="primary" type="submit">Update landing page description</button>
+        <label for="studio-address">Studio address</label>
+        <textarea id="studio-address" name="studioAddress" rows="3" required maxlength="500"
+                  th:text="${studioAddress}"></textarea>
+        <button class="primary" type="submit">Update landing page text</button>
       </form>
     </section>
 

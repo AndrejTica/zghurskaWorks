@@ -3,3 +3,4 @@ uploads/
 .idea/
 *.iml
 .env
+password.txt
