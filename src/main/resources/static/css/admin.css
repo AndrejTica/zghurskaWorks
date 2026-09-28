@@ -20,6 +20,11 @@ textarea { resize:vertical; } input:focus,textarea:focus,select:focus { outline:
 .primary { margin-top:1.5rem; border:0; padding:1rem; background:var(--ink); color:white; }
 .primary:hover { background:var(--accent); }
 .error { margin:.25rem 0; color:#b22f1b; font-size:.82rem; } .notice { padding:1rem; background:#d9dfcf; }
+.notice-error { background:#ead0c9; color:#8a3323; }
+.hero-settings { display:grid; grid-template-columns:1fr 1fr; gap:6vw; margin-bottom:6rem; padding-top:1rem; border-top:1px solid var(--ink); }
+.hero-settings h2 { margin-top:0; }
+.hero-preview { display:grid; min-height:18rem; place-items:center; background:#e7e4db; }
+.hero-preview img { width:100%; max-height:28rem; object-fit:cover; }
 .records { margin-top:6rem; border-top:1px solid var(--ink); }
 .records article { display:flex; align-items:center; gap:1rem; padding:1rem 0; border-bottom:1px solid var(--line); }
 .records img { width:64px; height:64px; object-fit:cover; }
@@ -29,4 +34,4 @@ textarea { resize:vertical; } input:focus,textarea:focus,select:focus { outline:
 .login-page { min-height:100vh; display:grid; place-items:center; padding:2rem; }
 .login-card { width:min(100%,460px); padding:3rem; border:1px solid var(--line); }
 .login-card .logo { display:block; margin-bottom:5rem; }.login-card h1 { font-size:4rem; margin-bottom:2rem; }
-@media(max-width:700px){ .forms{grid-template-columns:1fr;gap:4rem}.records article{align-items:flex-start;flex-wrap:wrap}.stars{margin-left:80px}.login-card{padding:2rem} }
+@media(max-width:700px){ .forms,.hero-settings{grid-template-columns:1fr;gap:4rem}.records article{align-items:flex-start;flex-wrap:wrap}.stars{margin-left:80px}.login-card{padding:2rem} }

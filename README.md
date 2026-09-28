@@ -2,9 +2,25 @@
 
 A Spring Boot portfolio with a public artwork, commission, and exhibition site plus a protected studio admin page.
 
-## Run with Docker
+## Host with Docker
 
 Docker and Docker Compose are the only requirements.
+
+Point your domain's `A` and/or `AAAA` DNS record to the server. Allow inbound TCP traffic on ports 80 and 443, and UDP traffic on port 443. Do not expose the application port 8080.
+
+Create the deployment configuration:
+
+```bash
+cp .env.example .env
+```
+
+Edit `.env` and set your domain and a strong admin password:
+
+```dotenv
+DOMAIN=portfolio.example.com
+ADMIN_USERNAME=artist
+ADMIN_PASSWORD=replace-with-a-long-random-password
+```
 
 Build and start the application:
 
@@ -12,15 +28,7 @@ Build and start the application:
 docker compose up --build -d
 ```
 
-Open <http://localhost:8080> for the portfolio and <http://localhost:8080/admin> for the protected admin page. The default local admin credentials are `artist` / `change-me-local`.
-
-For anything beyond local development, set your own credentials before starting:
-
-```bash
-export ADMIN_USERNAME='artist'
-export ADMIN_PASSWORD='choose-a-strong-admin-password'
-docker compose up --build -d
-```
+Caddy obtains and renews the HTTPS certificate automatically. Open `https://portfolio.example.com` for the portfolio and `https://portfolio.example.com/admin` for the protected admin page, replacing the example domain with your own.
 
 Stop the stack with:
 
@@ -28,4 +36,4 @@ Stop the stack with:
 docker compose down
 ```
 
-Database records are stored in an embedded H2 database. The database and uploaded images are retained in the `portfolio-data` Docker volume. JPEG, PNG, WebP, and GIF uploads are accepted up to 10 MB.
+The Java application is available only to Caddy on the private Docker network. Database records are stored in an embedded H2 database. The database and uploaded images are retained in the `portfolio-data` Docker volume, while Caddy certificates are retained in `caddy-data`. JPEG, PNG, WebP, and GIF uploads are accepted up to 10 MB. The landing-page image can be replaced from the protected admin page.

@@ -122,6 +122,15 @@ h1 em { font-weight: 400; color: var(--accent); }
   max-height: 72vh;
   background: #173d72;
 }
+.artwork-hero-image {
+  aspect-ratio: 4 / 5;
+  max-height: 72vh;
+}
+.artwork-hero-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
 .artwork-hero::before {
   content: "";
   position: absolute;

@@ -21,7 +21,24 @@
       <p class="eyebrow">Private studio</p>
       <h1>Portfolio manager</h1>
       <p th:if="${success}" class="notice" th:text="${success}"></p>
+      <p th:if="${error}" class="notice notice-error" th:text="${error}"></p>
     </div>
+
+    <section class="hero-settings">
+      <div>
+        <h2>Landing page image</h2>
+        <p class="muted">Replace the large featured image shown at the top of the portfolio.</p>
+        <form th:action="@{/admin/hero-image}" method="post" enctype="multipart/form-data">
+          <label for="hero-image">New image</label>
+          <input id="hero-image" type="file" name="heroImage" accept="image/jpeg,image/png,image/webp,image/gif" required>
+          <button class="primary" type="submit">Replace landing page image</button>
+        </form>
+      </div>
+      <div class="hero-preview">
+        <img th:if="${heroImageFilename != null}" th:src="@{'/uploads/' + ${heroImageFilename}}" alt="Current landing page image">
+        <p th:if="${heroImageFilename == null}" class="muted">The generated abstract artwork is currently displayed.</p>
+      </div>
+    </section>
 
     <div class="forms">
       <section>

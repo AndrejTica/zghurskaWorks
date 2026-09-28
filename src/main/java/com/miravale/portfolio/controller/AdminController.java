@@ -2,8 +2,10 @@ package com.miravale.portfolio.controller;
 
 import com.miravale.portfolio.model.Artwork;
 import com.miravale.portfolio.model.Exhibition;
+import com.miravale.portfolio.model.SiteSettings;
 import com.miravale.portfolio.repository.ArtworkRepository;
 import com.miravale.portfolio.repository.ExhibitionRepository;
+import com.miravale.portfolio.repository.SiteSettingsRepository;
 import com.miravale.portfolio.service.ImageStorageService;
 import jakarta.validation.Valid;
 import org.springframework.stereotype.Controller;
@@ -21,14 +23,17 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class AdminController {
     private final ArtworkRepository artworkRepository;
     private final ExhibitionRepository exhibitionRepository;
+    private final SiteSettingsRepository siteSettingsRepository;
     private final ImageStorageService imageStorageService;
 
     public AdminController(
             ArtworkRepository artworkRepository,
             ExhibitionRepository exhibitionRepository,
+            SiteSettingsRepository siteSettingsRepository,
             ImageStorageService imageStorageService) {
         this.artworkRepository = artworkRepository;
         this.exhibitionRepository = exhibitionRepository;
+        this.siteSettingsRepository = siteSettingsRepository;
         this.imageStorageService = imageStorageService;
     }
 
@@ -103,6 +108,46 @@ public class AdminController {
         return "redirect:/admin";
     }
 
+    @PostMapping("/admin/hero-image")
+    String replaceHeroImage(
+            @RequestParam("heroImage") MultipartFile heroImage,
+            RedirectAttributes redirectAttributes) {
+        if (heroImage.isEmpty()) {
+            redirectAttributes.addFlashAttribute("error", "Please choose a hero image.");
+            return "redirect:/admin";
+        }
+
+        String newFilename;
+        try {
+            newFilename = imageStorageService.store(heroImage);
+        } catch (IllegalArgumentException | IllegalStateException exception) {
+            redirectAttributes.addFlashAttribute("error", exception.getMessage());
+            return "redirect:/admin";
+        }
+
+        SiteSettings settings = siteSettingsRepository.findById(SiteSettings.ID).orElseGet(SiteSettings::new);
+        String previousFilename = settings.getHeroImageFilename();
+        settings.setHeroImageFilename(newFilename);
+        try {
+            siteSettingsRepository.save(settings);
+        } catch (RuntimeException exception) {
+            imageStorageService.delete(newFilename);
+            throw exception;
+        }
+
+        try {
+            imageStorageService.delete(previousFilename);
+        } catch (IllegalArgumentException | IllegalStateException exception) {
+            redirectAttributes.addFlashAttribute(
+                    "error",
+                    "Hero image replaced, but the previous image file could not be removed.");
+            return "redirect:/admin";
+        }
+
+        redirectAttributes.addFlashAttribute("success", "Hero image replaced.");
+        return "redirect:/admin";
+    }
+
     @PostMapping("/admin/artworks/{id}/delete")
     String deleteArtwork(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         Artwork artwork = artworkRepository.findById(id)
@@ -126,5 +171,8 @@ public class AdminController {
     private void addLists(Model model) {
         model.addAttribute("artworks", artworkRepository.findAll());
         model.addAttribute("exhibitions", exhibitionRepository.findAllByOrderByStartDateAsc());
+        model.addAttribute("heroImageFilename", siteSettingsRepository.findById(SiteSettings.ID)
+                .map(SiteSettings::getHeroImageFilename)
+                .orElse(null));
     }
 }
