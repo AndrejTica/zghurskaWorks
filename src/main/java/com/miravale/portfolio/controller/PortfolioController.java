@@ -4,6 +4,7 @@ import com.miravale.portfolio.repository.ArtworkRepository;
 import com.miravale.portfolio.repository.ExhibitionRepository;
 import com.miravale.portfolio.model.SiteSettings;
 import com.miravale.portfolio.repository.SiteSettingsRepository;
+import com.miravale.portfolio.service.ContactEmailService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.StringUtils;
@@ -16,14 +17,17 @@ public class PortfolioController {
     private final ArtworkRepository artworkRepository;
     private final ExhibitionRepository exhibitionRepository;
     private final SiteSettingsRepository siteSettingsRepository;
+    private final ContactEmailService contactEmailService;
 
     public PortfolioController(
             ArtworkRepository artworkRepository,
             ExhibitionRepository exhibitionRepository,
-            SiteSettingsRepository siteSettingsRepository) {
+            SiteSettingsRepository siteSettingsRepository,
+            ContactEmailService contactEmailService) {
         this.artworkRepository = artworkRepository;
         this.exhibitionRepository = exhibitionRepository;
         this.siteSettingsRepository = siteSettingsRepository;
+        this.contactEmailService = contactEmailService;
     }
 
     @GetMapping("/")
@@ -34,6 +38,7 @@ public class PortfolioController {
                 exhibitionRepository.findByEndDateGreaterThanEqualOrderByStartDateAsc(LocalDate.now()));
         SiteSettings settings = siteSettingsRepository.findById(SiteSettings.ID).orElseGet(SiteSettings::new);
         model.addAttribute("heroImageFilename", settings.getHeroImageFilename());
+        model.addAttribute("contactEmailEnabled", contactEmailService.isEnabled());
         String slogan = valueOrDefault(
                 settings.getLandingPageSlogan(),
                 SiteSettings.DEFAULT_LANDING_PAGE_SLOGAN);

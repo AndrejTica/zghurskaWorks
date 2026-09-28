@@ -20,12 +20,14 @@ Edit `.env` and set your domain and a strong admin password:
 DOMAIN=portfolio.example.com
 ADMIN_USERNAME=artist
 ADMIN_PASSWORD=replace-with-a-long-random-password
-MAIL_USERNAME=ann.drago.2002@gmail.com
-MAIL_PASSWORD=replace-with-a-google-app-password
+MAIL_USERNAME=
+MAIL_PASSWORD=
 CONTACT_RECIPIENT=ann.drago.2002@gmail.com
 ```
 
-For Gmail delivery, enable two-step verification on the sending Google account and create an app password. Use that 16-character app password as `MAIL_PASSWORD`, without spaces. Do not use the normal Google account password.
+The mail settings are optional. Without both `MAIL_USERNAME` and `MAIL_PASSWORD`, the application starts normally and hides the contact form while keeping the direct email link available.
+
+To enable Gmail delivery, set `MAIL_USERNAME` to the sending Gmail address, enable two-step verification on that Google account, and create an app password. Use that 16-character app password as `MAIL_PASSWORD`, without spaces. Do not use the normal Google account password.
 
 Build and start the application:
 

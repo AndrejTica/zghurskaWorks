@@ -277,6 +277,7 @@ h1 em { font-weight: 400; color: var(--accent); }
 .form-status { min-height: 1.5rem; color: var(--accent); }
 .form-success { color: #34613f; }
 .form-error { color: #a43722; }
+.contact-form-unavailable { color: #77746a; line-height: 1.6; }
 
 .artwork-image {
   width: 100%;

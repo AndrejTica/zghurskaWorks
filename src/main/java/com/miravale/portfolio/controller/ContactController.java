@@ -1,15 +1,13 @@
 package com.miravale.portfolio.controller;
 
 import com.miravale.portfolio.model.ContactForm;
+import com.miravale.portfolio.service.ContactEmailService;
 import com.miravale.portfolio.service.ContactRateLimiter;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.MailException;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -20,20 +18,14 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class ContactController {
     private static final Logger LOGGER = LoggerFactory.getLogger(ContactController.class);
 
-    private final JavaMailSender mailSender;
+    private final ContactEmailService contactEmailService;
     private final ContactRateLimiter rateLimiter;
-    private final String sender;
-    private final String recipient;
 
     public ContactController(
-            JavaMailSender mailSender,
-            ContactRateLimiter rateLimiter,
-            @Value("${spring.mail.username}") String sender,
-            @Value("${app.contact.recipient}") String recipient) {
-        this.mailSender = mailSender;
+            ContactEmailService contactEmailService,
+            ContactRateLimiter rateLimiter) {
+        this.contactEmailService = contactEmailService;
         this.rateLimiter = rateLimiter;
-        this.sender = sender;
-        this.recipient = recipient;
     }
 
     @PostMapping("/contact")
@@ -42,6 +34,14 @@ public class ContactController {
             BindingResult bindingResult,
             HttpServletRequest request,
             RedirectAttributes redirectAttributes) {
+        if (!contactEmailService.isEnabled()) {
+            addFormError(
+                    redirectAttributes,
+                    contactForm,
+                    "The contact form is unavailable. Please email ann.drago.2002@gmail.com directly.");
+            return "redirect:/#contact";
+        }
+
         if (bindingResult.hasErrors()) {
             addFormError(
                     redirectAttributes,
@@ -58,24 +58,8 @@ public class ContactController {
             return "redirect:/#contact";
         }
 
-        SimpleMailMessage email = new SimpleMailMessage();
-        email.setFrom(sender);
-        email.setTo(recipient);
-        email.setReplyTo(contactForm.getEmail().trim());
-        email.setSubject("New portfolio contact message");
-        email.setText("""
-                Name: %s
-                Email: %s
-
-                Message:
-                %s
-                """.formatted(
-                contactForm.getName().trim(),
-                contactForm.getEmail().trim(),
-                contactForm.getMessage().trim()));
-
         try {
-            mailSender.send(email);
+            contactEmailService.send(contactForm);
         } catch (MailException exception) {
             LOGGER.error("Contact email delivery failed", exception);
             addFormError(

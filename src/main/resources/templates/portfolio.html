@@ -102,7 +102,7 @@ in</span><em th:classappend="${sloganEmphasisOnNewLine ? 'new-line' : (!sloganHa
           <div class="contact-details"><a href="mailto:ann.drago.2002@gmail.com">ann.drago.2002@gmail.com</a><p th:text="${studioAddress}">Studio 17, Lichtgasse 8
 1070 Vienna, Austria</p></div>
         </div>
-        <form class="contact-form" id="contact-form" th:action="@{/contact}" method="post">
+        <form class="contact-form" id="contact-form" th:if="${contactEmailEnabled}" th:action="@{/contact}" method="post">
           <label for="name">Name</label><input id="name" name="name" type="text" autocomplete="name" required maxlength="100" th:value="${contactName}">
           <label for="email">Email</label><input id="email" name="email" type="email" autocomplete="email" required maxlength="254" th:value="${contactEmail}">
           <label for="message">Message</label><textarea id="message" name="message" rows="5" required maxlength="5000" th:text="${contactMessage}"></textarea>
@@ -110,6 +110,7 @@ in</span><em th:classappend="${sloganEmphasisOnNewLine ? 'new-line' : (!sloganHa
           <p class="form-status form-success" th:if="${contactSuccess}" role="status" th:text="${contactSuccess}"></p>
           <p class="form-status form-error" th:if="${contactError}" role="alert" th:text="${contactError}"></p>
         </form>
+        <p class="contact-form-unavailable" th:unless="${contactEmailEnabled}">The contact form is currently unavailable. Please use the email address shown above.</p>
       </div>
     </section>
   </main>
