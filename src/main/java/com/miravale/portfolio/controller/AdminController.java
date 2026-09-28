@@ -10,6 +10,7 @@ import com.miravale.portfolio.service.ImageStorageService;
 import jakarta.validation.Valid;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.util.StringUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -148,6 +149,29 @@ public class AdminController {
         return "redirect:/admin";
     }
 
+    @PostMapping("/admin/landing-description")
+    String updateLandingPageDescription(
+            @RequestParam("landingPageDescription") String landingPageDescription,
+            RedirectAttributes redirectAttributes) {
+        String description = landingPageDescription.trim();
+        if (!StringUtils.hasText(description)) {
+            redirectAttributes.addFlashAttribute("error", "Landing page description cannot be empty.");
+            return "redirect:/admin";
+        }
+        if (description.length() > 2000) {
+            redirectAttributes.addFlashAttribute(
+                    "error",
+                    "Landing page description cannot be longer than 2000 characters.");
+            return "redirect:/admin";
+        }
+
+        SiteSettings settings = siteSettingsRepository.findById(SiteSettings.ID).orElseGet(SiteSettings::new);
+        settings.setLandingPageDescription(description);
+        siteSettingsRepository.save(settings);
+        redirectAttributes.addFlashAttribute("success", "Landing page description updated.");
+        return "redirect:/admin";
+    }
+
     @PostMapping("/admin/artworks/{id}/delete")
     String deleteArtwork(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         Artwork artwork = artworkRepository.findById(id)
@@ -171,8 +195,12 @@ public class AdminController {
     private void addLists(Model model) {
         model.addAttribute("artworks", artworkRepository.findAll());
         model.addAttribute("exhibitions", exhibitionRepository.findAllByOrderByStartDateAsc());
-        model.addAttribute("heroImageFilename", siteSettingsRepository.findById(SiteSettings.ID)
-                .map(SiteSettings::getHeroImageFilename)
-                .orElse(null));
+        SiteSettings settings = siteSettingsRepository.findById(SiteSettings.ID).orElseGet(SiteSettings::new);
+        model.addAttribute("heroImageFilename", settings.getHeroImageFilename());
+        model.addAttribute(
+                "landingPageDescription",
+                StringUtils.hasText(settings.getLandingPageDescription())
+                        ? settings.getLandingPageDescription()
+                        : SiteSettings.DEFAULT_LANDING_PAGE_DESCRIPTION);
     }
 }

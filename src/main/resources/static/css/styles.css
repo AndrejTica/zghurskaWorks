@@ -298,10 +298,15 @@ footer p { margin: 0; }
 footer div { display: flex; gap: 2rem; }
 
 @media (max-width: 760px) {
-  .site-header { min-height: 68px; }
+  body.menu-open { overflow: hidden; }
+  .site-header { min-height: 68px; padding-right: 1rem; padding-left: 1rem; }
+  .logo { max-width: calc(100% - 60px); font-size: clamp(1.35rem, 7vw, 1.75rem); }
   .menu-toggle {
     z-index: 11;
     display: grid;
+    min-width: 44px;
+    min-height: 44px;
+    place-content: center;
     gap: 6px;
     border: 0;
     padding: .6rem;
@@ -321,9 +326,10 @@ footer div { display: flex; gap: 2rem; }
   }
   .main-nav.open { display: flex; }
   .nav-link { font-family: var(--serif); font-size: 2.7rem; }
-  .hero { min-height: auto; grid-template-columns: 1fr; padding: 5rem 0; }
+  main { padding: 0 1rem; }
+  .hero { min-height: auto; grid-template-columns: 1fr; gap: 3rem; padding: 2.5rem 0 5rem; }
   .hero-art { grid-row: 1; }
-  h1 { font-size: clamp(3.6rem, 18vw, 6rem); }
+  h1 { overflow-wrap: anywhere; font-size: clamp(3rem, 16vw, 6rem); }
   .gallery-heading { padding-top: 4rem; }
   .gallery-grid { grid-template-columns: 1fr; gap: 4rem; padding-top: 1.5rem; }
   .work-card:nth-child(even) { margin-top: 0; }
@@ -336,6 +342,18 @@ footer div { display: flex; gap: 2rem; }
   .exhibition time { grid-column: 1 / -1; }
   .contact-layout { grid-template-columns: 1fr; gap: 1rem; padding: 7rem 0 4rem; }
   .contact-details { margin-top: 3rem; }
+  .contact-details a { font-size: clamp(1rem, 5.5vw, 1.45rem); overflow-wrap: anywhere; }
+  .contact-form input, .contact-form textarea { min-height: 44px; font-size: 1rem; }
+  .submit-button { min-height: 48px; }
+  footer { flex-direction: column; gap: 1.25rem; padding: 2rem 1rem; }
+  footer div { flex-wrap: wrap; gap: .5rem 1.5rem; }
+  footer a { display: inline-flex; min-height: 44px; align-items: center; }
+}
+
+@media (max-width: 420px) {
+  .page-intro h1 { font-size: clamp(2.8rem, 15vw, 4rem); }
+  .exhibition { grid-template-columns: minmax(0, 1fr) 44px; }
+  .exhibition > a { display: grid; min-width: 44px; min-height: 44px; place-items: center; }
 }
 
 @media (prefers-reduced-motion: reduce) {

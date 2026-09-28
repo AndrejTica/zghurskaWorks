@@ -19,6 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -36,10 +37,29 @@ class HeroImageAdminTest {
     private ImageStorageService imageStorageService;
 
     @AfterEach
-    void cleanUpHeroImage() {
+    void cleanUpSiteSettings() {
         siteSettingsRepository.findById(SiteSettings.ID).ifPresent(settings ->
                 imageStorageService.delete(settings.getHeroImageFilename()));
         siteSettingsRepository.deleteAll();
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void updatesLandingPageDescription() throws Exception {
+        String description = "New introduction for Anna Zghurska.";
+
+        mockMvc.perform(post("/admin/landing-description")
+                        .param("landingPageDescription", description)
+                        .with(csrf()))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/admin"));
+
+        assertThat(siteSettingsRepository.findById(SiteSettings.ID)
+                .orElseThrow()
+                .getLandingPageDescription()).isEqualTo(description);
+        mockMvc.perform(get("/"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(org.hamcrest.Matchers.containsString(description)));
     }
 
     @Test

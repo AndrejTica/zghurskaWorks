@@ -6,6 +6,7 @@ import com.miravale.portfolio.model.SiteSettings;
 import com.miravale.portfolio.repository.SiteSettingsRepository;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 
 import java.time.LocalDate;
@@ -31,9 +32,13 @@ public class PortfolioController {
         model.addAttribute("commissions", artworkRepository.findByCommissionedOrderByCreatedDateDesc(true));
         model.addAttribute("exhibitions",
                 exhibitionRepository.findByEndDateGreaterThanEqualOrderByStartDateAsc(LocalDate.now()));
-        model.addAttribute("heroImageFilename", siteSettingsRepository.findById(SiteSettings.ID)
-                .map(SiteSettings::getHeroImageFilename)
-                .orElse(null));
+        SiteSettings settings = siteSettingsRepository.findById(SiteSettings.ID).orElseGet(SiteSettings::new);
+        model.addAttribute("heroImageFilename", settings.getHeroImageFilename());
+        model.addAttribute(
+                "landingPageDescription",
+                StringUtils.hasText(settings.getLandingPageDescription())
+                        ? settings.getLandingPageDescription()
+                        : SiteSettings.DEFAULT_LANDING_PAGE_DESCRIPTION);
         return "portfolio";
     }
 

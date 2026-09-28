@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Studio Admin — Mira Vale</title>
+  <title>Studio Admin — Anna Zghurska</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Italiana&display=swap" rel="stylesheet">
@@ -11,7 +11,7 @@
 </head>
 <body>
   <header>
-    <a class="logo" th:href="@{/}">Mira Vale</a>
+    <a class="logo" th:href="@{/}">Anna Zghurska</a>
     <div><a th:href="@{/}">View portfolio ↗</a>
       <form th:action="@{/logout}" method="post"><button type="submit">Log out</button></form>
     </div>
@@ -35,9 +35,19 @@
         </form>
       </div>
       <div class="hero-preview">
-        <img th:if="${heroImageFilename != null}" th:src="@{'/uploads/' + ${heroImageFilename}}" alt="Current landing page image">
+        <img th:if="${heroImageFilename != null}" th:src="@{'/uploads/' + ${heroImageFilename}}" alt="Current landing page image" loading="lazy">
         <p th:if="${heroImageFilename == null}" class="muted">The generated abstract artwork is currently displayed.</p>
       </div>
+    </section>
+
+    <section class="description-settings">
+      <h2>Landing page description</h2>
+      <form th:action="@{/admin/landing-description}" method="post">
+        <label for="landing-page-description">Introduction</label>
+        <textarea id="landing-page-description" name="landingPageDescription" rows="4" required maxlength="2000"
+                  th:text="${landingPageDescription}"></textarea>
+        <button class="primary" type="submit">Update landing page description</button>
+      </form>
     </section>
 
     <div class="forms">
@@ -94,7 +104,7 @@
       <h2>Artworks</h2>
       <p th:if="${artworks.empty}" class="muted">No artworks added yet.</p>
       <article th:each="item : ${artworks}">
-        <img th:src="@{'/uploads/' + ${item.imageFilename}}" th:alt="${item.title}">
+        <img th:src="@{'/uploads/' + ${item.imageFilename}}" th:alt="${item.title}" loading="lazy">
         <div><strong th:text="${item.title}"></strong><small th:text="${item.commissioned ? 'Commission · ' : 'Work · '} + ${#temporals.format(item.createdDate, 'dd MMM yyyy')}"></small></div>
         <form th:action="@{'/admin/artworks/' + ${item.id} + '/delete'}" method="post"><button class="delete" type="submit">Delete</button></form>
       </article>
