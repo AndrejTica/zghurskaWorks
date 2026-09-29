@@ -1,5 +1,6 @@
 package com.miravale.portfolio;
 
+import com.miravale.portfolio.config.DatabaseSchemaMigration;
 import com.miravale.portfolio.model.Artwork;
 import com.miravale.portfolio.model.Exhibition;
 import com.miravale.portfolio.repository.ArtworkRepository;
@@ -11,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
@@ -48,6 +50,12 @@ class PortfolioManagementIntegrationTest {
     @Autowired
     private ImageStorageService imageStorageService;
 
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+
+    @Autowired
+    private DatabaseSchemaMigration databaseSchemaMigration;
+
     @BeforeEach
     @AfterEach
     void cleanUpPortfolioRecords() {
@@ -76,6 +84,9 @@ class PortfolioManagementIntegrationTest {
         Artwork created = artworkRepository.findAll().stream().findFirst().orElseThrow();
         Path originalFile = UPLOAD_DIRECTORY.resolve(created.getImageFilename());
         assertThat(Files.readString(originalFile)).isEqualTo("original image");
+        mockMvc.perform(get("/uploads/{filename}", created.getImageFilename()))
+                .andExpect(status().isOk())
+                .andExpect(content().bytes("original image".getBytes()));
 
         mockMvc.perform(get("/admin"))
                 .andExpect(status().isOk())
@@ -107,6 +118,11 @@ class PortfolioManagementIntegrationTest {
         assertThat(updated.isCommissioned()).isTrue();
         assertThat(Files.exists(originalFile)).isFalse();
         assertThat(Files.readString(replacementFile)).isEqualTo("replacement image");
+        mockMvc.perform(get("/uploads/{filename}", updated.getImageFilename()))
+                .andExpect(status().isOk())
+                .andExpect(content().bytes("replacement image".getBytes()));
+        mockMvc.perform(get("/uploads/{filename}", created.getImageFilename()))
+                .andExpect(status().isNotFound());
 
         mockMvc.perform(get("/"))
                 .andExpect(status().isOk())
@@ -206,7 +222,10 @@ class PortfolioManagementIntegrationTest {
 
     @Test
     @WithMockUser(roles = "ADMIN")
-    void exhibitionDefaultsToNoDifficultyAndDoesNotDisplayARating() throws Exception {
+    void legacyExhibitionSchemaIsMigratedToAllowNoDifficulty() throws Exception {
+        jdbcTemplate.execute(
+                "ALTER TABLE exhibition ALTER COLUMN difficulty SET NOT NULL");
+        databaseSchemaMigration.run(null);
         LocalDate startDate = LocalDate.now().plusMonths(2);
 
         mockMvc.perform(post("/admin/exhibitions")
@@ -231,5 +250,73 @@ class PortfolioManagementIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("Untitled Spaces")))
                 .andExpect(content().string(not(containsString("class=\"difficulty\""))));
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void invalidExhibitionEditDoesNotChangePersistedFields() throws Exception {
+        Exhibition exhibition = new Exhibition();
+        exhibition.setTitle("Original exhibition");
+        exhibition.setVenue("Original venue");
+        exhibition.setStartDate(LocalDate.of(2026, 10, 1));
+        exhibition.setEndDate(LocalDate.of(2026, 10, 10));
+        exhibition.setDetails("Original details");
+        exhibition.setDifficulty(2);
+        exhibition = exhibitionRepository.save(exhibition);
+
+        mockMvc.perform(post("/admin/exhibitions/{id}", exhibition.getId())
+                        .param("title", "Invalid update")
+                        .param("venue", "Changed venue")
+                        .param("startDate", "2026-12-10")
+                        .param("endDate", "2026-12-01")
+                        .param("details", "Changed details")
+                        .param("difficulty", "5")
+                        .with(csrf()))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/admin"))
+                .andExpect(flash().attribute(
+                        "error",
+                        "Exhibition was not updated. Please complete all fields and check the dates."));
+
+        Exhibition unchanged = exhibitionRepository.findById(exhibition.getId()).orElseThrow();
+        assertThat(unchanged.getTitle()).isEqualTo("Original exhibition");
+        assertThat(unchanged.getVenue()).isEqualTo("Original venue");
+        assertThat(unchanged.getStartDate()).isEqualTo(LocalDate.of(2026, 10, 1));
+        assertThat(unchanged.getEndDate()).isEqualTo(LocalDate.of(2026, 10, 10));
+        assertThat(unchanged.getDetails()).isEqualTo("Original details");
+        assertThat(unchanged.getDifficulty()).isEqualTo(2);
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void staleArtworkAndExhibitionActionsReturnToAdminWithAnError() throws Exception {
+        long missingId = Long.MAX_VALUE;
+
+        mockMvc.perform(multipart("/admin/artworks/{id}", missingId)
+                        .param("title", "Missing")
+                        .param("description", "Missing")
+                        .param("createdDate", "2026-01-01")
+                        .with(csrf()))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/admin"))
+                .andExpect(flash().attribute("error", "Artwork no longer exists."));
+        mockMvc.perform(post("/admin/artworks/{id}/delete", missingId).with(csrf()))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/admin"))
+                .andExpect(flash().attribute("error", "Artwork no longer exists."));
+        mockMvc.perform(post("/admin/exhibitions/{id}", missingId)
+                        .param("title", "Missing")
+                        .param("venue", "Missing")
+                        .param("startDate", "2026-01-01")
+                        .param("endDate", "2026-01-02")
+                        .param("details", "Missing")
+                        .with(csrf()))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/admin"))
+                .andExpect(flash().attribute("error", "Exhibition no longer exists."));
+        mockMvc.perform(post("/admin/exhibitions/{id}/delete", missingId).with(csrf()))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/admin"))
+                .andExpect(flash().attribute("error", "Exhibition no longer exists."));
     }
 }

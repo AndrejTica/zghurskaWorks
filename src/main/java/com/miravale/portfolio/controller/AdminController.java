@@ -188,10 +188,20 @@ public class AdminController {
 
     @PostMapping("/admin/artworks/{id}/delete")
     String deleteArtwork(@PathVariable Long id, RedirectAttributes redirectAttributes) {
-        Artwork artwork = artworkRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Artwork not found."));
+        Artwork artwork = artworkRepository.findById(id).orElse(null);
+        if (artwork == null) {
+            redirectAttributes.addFlashAttribute("error", "Artwork no longer exists.");
+            return "redirect:/admin";
+        }
         artworkRepository.delete(artwork);
-        imageStorageService.delete(artwork.getImageFilename());
+        try {
+            imageStorageService.delete(artwork.getImageFilename());
+        } catch (IllegalArgumentException | IllegalStateException exception) {
+            redirectAttributes.addFlashAttribute(
+                    "error",
+                    "Artwork deleted, but its image file could not be removed.");
+            return "redirect:/admin";
+        }
         redirectAttributes.addFlashAttribute("success", "Artwork deleted.");
         return "redirect:/admin";
     }
@@ -203,8 +213,11 @@ public class AdminController {
             BindingResult bindingResult,
             @RequestParam(value = "image", required = false) MultipartFile image,
             RedirectAttributes redirectAttributes) {
-        Artwork artwork = artworkRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Artwork not found."));
+        Artwork artwork = artworkRepository.findById(id).orElse(null);
+        if (artwork == null) {
+            redirectAttributes.addFlashAttribute("error", "Artwork no longer exists.");
+            return "redirect:/admin";
+        }
         if (bindingResult.hasErrors()) {
             redirectAttributes.addFlashAttribute(
                     "error",
@@ -255,7 +268,8 @@ public class AdminController {
     @PostMapping("/admin/exhibitions/{id}/delete")
     String deleteExhibition(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         if (!exhibitionRepository.existsById(id)) {
-            throw new IllegalArgumentException("Exhibition not found.");
+            redirectAttributes.addFlashAttribute("error", "Exhibition no longer exists.");
+            return "redirect:/admin";
         }
         exhibitionRepository.deleteById(id);
         redirectAttributes.addFlashAttribute("success", "Exhibition deleted.");
@@ -268,8 +282,11 @@ public class AdminController {
             @Valid @ModelAttribute Exhibition changes,
             BindingResult bindingResult,
             RedirectAttributes redirectAttributes) {
-        Exhibition exhibition = exhibitionRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Exhibition not found."));
+        Exhibition exhibition = exhibitionRepository.findById(id).orElse(null);
+        if (exhibition == null) {
+            redirectAttributes.addFlashAttribute("error", "Exhibition no longer exists.");
+            return "redirect:/admin";
+        }
         if (changes.getStartDate() != null && changes.getEndDate() != null
                 && changes.getEndDate().isBefore(changes.getStartDate())) {
             bindingResult.rejectValue("endDate", "date.order", "End date must be on or after the start date.");

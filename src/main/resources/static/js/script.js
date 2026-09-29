@@ -35,6 +35,13 @@ navLinks.forEach((link) => {
   link.addEventListener("click", () => showTab(link.dataset.tab));
 });
 
+document.querySelectorAll('a[href="#works"]').forEach((link) => {
+  link.addEventListener("click", (event) => {
+    event.preventDefault();
+    showTab("works");
+  });
+});
+
 menuToggle.addEventListener("click", () => {
   setMenuOpen(!mainNav.classList.contains("open"));
 });

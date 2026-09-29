@@ -12,7 +12,8 @@ public class WebConfig implements WebMvcConfigurer {
     private final String uploadLocation;
 
     public WebConfig(@Value("${app.upload-dir}") String uploadDirectory) {
-        uploadLocation = Path.of(uploadDirectory).toAbsolutePath().normalize().toUri().toString();
+        String location = Path.of(uploadDirectory).toAbsolutePath().normalize().toUri().toString();
+        uploadLocation = location.endsWith("/") ? location : location + "/";
     }
 
     @Override
