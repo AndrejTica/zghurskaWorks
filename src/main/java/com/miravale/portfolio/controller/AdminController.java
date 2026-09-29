@@ -198,6 +198,62 @@ public class AdminController {
         return "redirect:/admin";
     }
 
+    @PostMapping("/admin/artworks/{id}")
+    String updateArtwork(
+            @PathVariable Long id,
+            @Valid @ModelAttribute Artwork changes,
+            BindingResult bindingResult,
+            @RequestParam(value = "image", required = false) MultipartFile image,
+            RedirectAttributes redirectAttributes) {
+        Artwork artwork = artworkRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Artwork not found."));
+        if (bindingResult.hasErrors()) {
+            redirectAttributes.addFlashAttribute(
+                    "error",
+                    "Artwork was not updated. Please complete all fields and check their lengths.");
+            return "redirect:/admin";
+        }
+
+        String previousFilename = artwork.getImageFilename();
+        String newFilename = null;
+        if (image != null && !image.isEmpty()) {
+            try {
+                newFilename = imageStorageService.store(image);
+            } catch (IllegalArgumentException | IllegalStateException exception) {
+                redirectAttributes.addFlashAttribute("error", exception.getMessage());
+                return "redirect:/admin";
+            }
+        }
+
+        artwork.setTitle(changes.getTitle());
+        artwork.setDescription(changes.getDescription());
+        artwork.setCreatedDate(changes.getCreatedDate());
+        artwork.setCommissioned(changes.isCommissioned());
+        if (newFilename != null) {
+            artwork.setImageFilename(newFilename);
+        }
+
+        try {
+            artworkRepository.save(artwork);
+        } catch (RuntimeException exception) {
+            imageStorageService.delete(newFilename);
+            throw exception;
+        }
+
+        if (newFilename != null) {
+            try {
+                imageStorageService.delete(previousFilename);
+            } catch (IllegalArgumentException | IllegalStateException exception) {
+                redirectAttributes.addFlashAttribute(
+                        "error",
+                        "Artwork updated, but the previous image file could not be removed.");
+                return "redirect:/admin";
+            }
+        }
+        redirectAttributes.addFlashAttribute("success", "Artwork updated.");
+        return "redirect:/admin";
+    }
+
     @PostMapping("/admin/exhibitions/{id}/delete")
     String deleteExhibition(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         if (!exhibitionRepository.existsById(id)) {

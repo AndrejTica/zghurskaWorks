@@ -113,7 +113,30 @@
       <article th:each="item : ${artworks}">
         <img th:src="@{'/uploads/' + ${item.imageFilename}}" th:alt="${item.title}" loading="lazy">
         <div><strong th:text="${item.title}"></strong><small th:text="${item.commissioned ? 'Commission · ' : 'Work · '} + ${#temporals.format(item.createdDate, 'dd MMM yyyy')}"></small></div>
-        <form th:action="@{'/admin/artworks/' + ${item.id} + '/delete'}" method="post"><button class="delete" type="submit">Delete</button></form>
+        <div class="record-actions">
+          <details class="record-editor">
+            <summary>Edit</summary>
+            <form th:action="@{'/admin/artworks/' + ${item.id}}" method="post" enctype="multipart/form-data">
+              <label th:for="'edit-title-' + ${item.id}">Title</label>
+              <input th:id="'edit-title-' + ${item.id}" name="title" th:value="${item.title}" required maxlength="150">
+              <label th:for="'edit-description-' + ${item.id}">Description</label>
+              <textarea th:id="'edit-description-' + ${item.id}" name="description" rows="4" required maxlength="2000"
+                        th:text="${item.description}"></textarea>
+              <label th:for="'edit-created-date-' + ${item.id}">Date created</label>
+              <input th:id="'edit-created-date-' + ${item.id}" name="createdDate" type="date"
+                     th:value="${item.createdDate}" required>
+              <label th:for="'edit-image-' + ${item.id}">Replace image (optional)</label>
+              <input th:id="'edit-image-' + ${item.id}" name="image" type="file"
+                     accept="image/jpeg,image/png,image/webp,image/gif">
+              <label class="check">
+                <input name="commissioned" type="checkbox" value="true" th:checked="${item.commissioned}">
+                This is a commissioned work
+              </label>
+              <button class="primary" type="submit">Save changes</button>
+            </form>
+          </details>
+          <form th:action="@{'/admin/artworks/' + ${item.id} + '/delete'}" method="post"><button class="delete" type="submit">Delete</button></form>
+        </div>
       </article>
     </section>
 

@@ -229,9 +229,33 @@ h1 em { font-weight: 400; color: var(--accent); }
   padding: 2.5rem 0;
   border-bottom: 1px solid var(--line);
 }
+.exhibition--upcoming {
+  margin: 0 -1.5rem;
+  padding-right: 1.5rem;
+  padding-left: 1.5rem;
+  background: color-mix(in srgb, var(--accent) 9%, transparent);
+  box-shadow: inset 4px 0 0 var(--accent);
+}
+.exhibition--past { color: #59574f; }
 .exhibition time { font-size: .85rem; text-transform: uppercase; letter-spacing: .08em; }
 .exhibition h2 { margin: .3rem 0 1rem; font-family: var(--serif); font-size: clamp(2rem, 4vw, 4rem); font-weight: 400; }
 .exhibition p { margin: 0; color: #6b6961; line-height: 1.6; }
+.exhibition-status {
+  display: inline-block;
+  margin: 0 0 .7rem;
+  padding: .3rem .55rem;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  font-size: .65rem;
+  font-weight: 600;
+  letter-spacing: .12em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+.exhibition-status--upcoming {
+  background: var(--accent);
+  color: var(--paper);
+}
 .exhibition .exhibition-type { color: var(--accent); font-size: .7rem; letter-spacing: .15em; text-transform: uppercase; }
 .exhibition > a { font-size: 1.8rem; text-decoration: none; transition: transform .2s; }
 .exhibition > a:hover { transform: translate(4px, -4px); }

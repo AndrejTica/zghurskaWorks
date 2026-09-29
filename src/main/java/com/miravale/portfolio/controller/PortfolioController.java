@@ -1,8 +1,9 @@
 package com.miravale.portfolio.controller;
 
+import com.miravale.portfolio.model.Exhibition;
+import com.miravale.portfolio.model.SiteSettings;
 import com.miravale.portfolio.repository.ArtworkRepository;
 import com.miravale.portfolio.repository.ExhibitionRepository;
-import com.miravale.portfolio.model.SiteSettings;
 import com.miravale.portfolio.repository.SiteSettingsRepository;
 import com.miravale.portfolio.service.ContactEmailService;
 import org.springframework.stereotype.Controller;
@@ -11,6 +12,8 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Controller
 public class PortfolioController {
@@ -34,8 +37,9 @@ public class PortfolioController {
     String portfolio(Model model) {
         model.addAttribute("works", artworkRepository.findByCommissionedOrderByCreatedDateDesc(false));
         model.addAttribute("commissions", artworkRepository.findByCommissionedOrderByCreatedDateDesc(true));
-        model.addAttribute("exhibitions",
-                exhibitionRepository.findByEndDateGreaterThanEqualOrderByStartDateAsc(LocalDate.now()));
+        LocalDate today = LocalDate.now();
+        model.addAttribute("today", today);
+        model.addAttribute("exhibitions", orderedExhibitions(today));
         SiteSettings settings = siteSettingsRepository.findById(SiteSettings.ID).orElseGet(SiteSettings::new);
         model.addAttribute("heroImageFilename", settings.getHeroImageFilename());
         model.addAttribute("contactEmailEnabled", contactEmailService.isEnabled());
@@ -52,6 +56,28 @@ public class PortfolioController {
                 "studioAddress",
                 valueOrDefault(settings.getStudioAddress(), SiteSettings.DEFAULT_STUDIO_ADDRESS));
         return "portfolio";
+    }
+
+    private List<Exhibition> orderedExhibitions(LocalDate today) {
+        List<Exhibition> exhibitions =
+                new ArrayList<>(exhibitionRepository.findAllByOrderByStartDateAsc());
+        exhibitions.sort((left, right) -> {
+            int leftOrder = exhibitionOrder(left, today);
+            int rightOrder = exhibitionOrder(right, today);
+            if (leftOrder != rightOrder) {
+                return Integer.compare(leftOrder, rightOrder);
+            }
+            int dateOrder = left.getStartDate().compareTo(right.getStartDate());
+            return leftOrder == 2 ? -dateOrder : dateOrder;
+        });
+        return exhibitions;
+    }
+
+    private int exhibitionOrder(Exhibition exhibition, LocalDate today) {
+        if (!exhibition.getStartDate().isAfter(today) && !exhibition.getEndDate().isBefore(today)) {
+            return 0;
+        }
+        return exhibition.getStartDate().isAfter(today) ? 1 : 2;
     }
 
     @GetMapping("/login")

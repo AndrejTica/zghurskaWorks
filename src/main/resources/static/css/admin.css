@@ -34,6 +34,22 @@ textarea { resize:vertical; } input:focus,textarea:focus,select:focus { outline:
 .records article>div { display:flex; flex:1; flex-direction:column; gap:.3rem; }
 .records small,.muted { color:#77746a; } .stars { color:var(--accent); letter-spacing:.14em; }
 .delete { border:0; background:none; color:#8a3323; text-decoration:underline; }
+.records article>.record-actions { flex:0; flex-direction:row; align-items:center; gap:1rem; }
+.record-editor summary { cursor:pointer; text-decoration:underline; }
+.record-editor[open] {
+  position:fixed;
+  z-index:10;
+  inset:50% auto auto 50%;
+  width:min(560px,calc(100vw - 2rem));
+  max-height:calc(100vh - 2rem);
+  overflow:auto;
+  padding:1.5rem;
+  border:1px solid var(--line);
+  background:var(--paper);
+  box-shadow:0 1.5rem 5rem #17171440;
+  transform:translate(-50%,-50%);
+}
+.record-editor[open] summary { margin-bottom:1rem; text-align:right; }
 .login-page { min-height:100vh; display:grid; place-items:center; padding:2rem; }
 .login-card { width:min(100%,460px); padding:3rem; border:1px solid var(--line); }
 .login-card .logo { display:block; margin-bottom:5rem; }.login-card h1 { font-size:4rem; margin-bottom:2rem; }
@@ -51,8 +67,9 @@ textarea { resize:vertical; } input:focus,textarea:focus,select:focus { outline:
   .primary { min-height:48px; }
   .records article { align-items:flex-start; flex-wrap:wrap; }
   .records article>div { min-width:calc(100% - 80px); }
+  .records article>.record-actions { min-width:100%; }
   .stars { margin-left:0; }
-  .delete { min-height:44px; padding:.5rem 0; }
+  .delete,.record-editor summary { min-height:44px; padding:.5rem 0; }
   .login-page { padding:1rem; }
   .login-card { padding:1.5rem; }
   .login-card .logo { margin-bottom:3rem; }

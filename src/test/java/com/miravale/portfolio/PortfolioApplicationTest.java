@@ -43,17 +43,28 @@ class PortfolioApplicationTest {
         Exhibition exhibition = new Exhibition();
         exhibition.setTitle("Material Memory");
         exhibition.setVenue("Galerie Haus");
-        exhibition.setStartDate(LocalDate.of(2027, 2, 6));
-        exhibition.setEndDate(LocalDate.of(2027, 3, 28));
+        exhibition.setStartDate(LocalDate.now().plusMonths(2));
+        exhibition.setEndDate(LocalDate.now().plusMonths(3));
         exhibition.setDetails("A group exhibition.");
         exhibition.setDifficulty(3);
         exhibitionRepository.save(exhibition);
+
+        Exhibition pastExhibition = new Exhibition();
+        pastExhibition.setTitle("Earlier Works");
+        pastExhibition.setVenue("Old Town Gallery");
+        pastExhibition.setStartDate(LocalDate.now().minusYears(1));
+        pastExhibition.setEndDate(LocalDate.now().minusYears(1).plusMonths(1));
+        pastExhibition.setDetails("A past solo exhibition.");
+        pastExhibition.setDifficulty(2);
+        exhibitionRepository.save(pastExhibition);
 
         ResponseEntity<String> portfolio = restTemplate.getForEntity("http://localhost:" + port + "/", String.class);
         ResponseEntity<String> admin = restTemplate.getForEntity("http://localhost:" + port + "/admin", String.class);
 
         assertThat(portfolio.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(portfolio.getBody()).contains("Harbour Light", "Material Memory", "★★★☆☆");
+        assertThat(portfolio.getBody())
+                .contains("Harbour Light", "Material Memory", "Earlier Works", "Upcoming", "★★★☆☆")
+                .contains("exhibition--upcoming", "exhibition--past");
         assertThat(admin.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(admin.getBody()).contains("Welcome back");
     }
