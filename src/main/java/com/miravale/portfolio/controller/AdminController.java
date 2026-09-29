@@ -44,9 +44,7 @@ public class AdminController {
             model.addAttribute("artwork", new Artwork());
         }
         if (!model.containsAttribute("exhibition")) {
-            Exhibition exhibition = new Exhibition();
-            exhibition.setDifficulty(1);
-            model.addAttribute("exhibition", exhibition);
+            model.addAttribute("exhibition", new Exhibition());
         }
         addLists(model);
         return "admin";

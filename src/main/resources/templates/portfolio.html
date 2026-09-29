@@ -84,7 +84,9 @@ in</span><em th:classappend="${sloganEmphasisOnNewLine ? 'new-line' : (!sloganHa
           <div>
             <span class="exhibition-status exhibition-status--upcoming" th:if="${exhibition.startDate.isAfter(today)}">Upcoming</span>
             <span class="exhibition-status exhibition-status--current" th:if="${!exhibition.startDate.isAfter(today) && !exhibition.endDate.isBefore(today)}">On view</span>
-            <p class="difficulty" th:aria-label="|Difficulty ${exhibition.difficulty} out of 5|" th:text="${#strings.repeat('★', exhibition.difficulty) + #strings.repeat('☆', 5 - exhibition.difficulty)}">★★★☆☆</p>
+            <p class="difficulty" th:if="${exhibition.difficulty != null}"
+               th:aria-label="|Difficulty ${exhibition.difficulty} out of 5|"
+               th:text="${#strings.repeat('★', exhibition.difficulty) + #strings.repeat('☆', 5 - exhibition.difficulty)}">★★★☆☆</p>
             <h2 th:text="${exhibition.title}">Exhibition title</h2>
             <p><span th:text="${exhibition.venue}">Venue</span><br>
               <span th:text="${#temporals.format(exhibition.startDate, 'dd MMMM') + ' — ' + #temporals.format(exhibition.endDate, 'dd MMMM yyyy')}">Dates</span><br>

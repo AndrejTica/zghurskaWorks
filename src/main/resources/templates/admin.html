@@ -98,6 +98,7 @@
           <p class="error" th:errors="*{details}"></p>
           <label for="difficulty">Difficulty</label>
           <select id="difficulty" th:field="*{difficulty}">
+            <option value="">No difficulty</option>
             <option value="1">★☆☆☆☆</option><option value="2">★★☆☆☆</option>
             <option value="3">★★★☆☆</option><option value="4">★★★★☆</option><option value="5">★★★★★</option>
           </select>
@@ -145,7 +146,8 @@
       <p th:if="${exhibitions.empty}" class="muted">No exhibitions added yet.</p>
       <article th:each="item : ${exhibitions}">
         <div><strong th:text="${item.title}"></strong><small th:text="${item.venue + ' · ' + #temporals.format(item.startDate, 'dd MMM yyyy')}"></small></div>
-        <span class="stars" th:text="${#strings.repeat('★', item.difficulty) + #strings.repeat('☆', 5 - item.difficulty)}"></span>
+        <span class="stars" th:if="${item.difficulty != null}"
+              th:text="${#strings.repeat('★', item.difficulty) + #strings.repeat('☆', 5 - item.difficulty)}"></span>
         <form th:action="@{'/admin/exhibitions/' + ${item.id} + '/delete'}" method="post"><button class="delete" type="submit">Delete</button></form>
       </article>
     </section>

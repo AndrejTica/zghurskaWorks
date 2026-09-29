@@ -169,4 +169,33 @@ class PortfolioManagementIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(content().string(not(containsString("Echoes in Colour"))));
     }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void exhibitionDefaultsToNoDifficultyAndDoesNotDisplayARating() throws Exception {
+        LocalDate startDate = LocalDate.now().plusMonths(2);
+
+        mockMvc.perform(post("/admin/exhibitions")
+                        .param("title", "Untitled Spaces")
+                        .param("venue", "Studio Annex")
+                        .param("startDate", startDate.toString())
+                        .param("endDate", startDate.plusDays(10).toString())
+                        .param("details", "An exhibition without a difficulty rating.")
+                        .with(csrf()))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/admin"))
+                .andExpect(flash().attribute("success", "Exhibition added."));
+
+        Exhibition exhibition = exhibitionRepository.findAll().stream().findFirst().orElseThrow();
+        assertThat(exhibition.getDifficulty()).isNull();
+
+        mockMvc.perform(get("/admin"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Untitled Spaces")))
+                .andExpect(content().string(not(containsString("class=\"stars\""))));
+        mockMvc.perform(get("/"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Untitled Spaces")))
+                .andExpect(content().string(not(containsString("class=\"difficulty\""))));
+    }
 }

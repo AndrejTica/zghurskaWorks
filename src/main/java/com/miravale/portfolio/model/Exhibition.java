@@ -38,7 +38,7 @@ public class Exhibition {
 
     @Min(1)
     @Max(5)
-    private int difficulty;
+    private Integer difficulty;
 
     public Long getId() { return id; }
     public String getTitle() { return title; }
@@ -51,6 +51,6 @@ public class Exhibition {
     public void setEndDate(LocalDate endDate) { this.endDate = endDate; }
     public String getDetails() { return details; }
     public void setDetails(String details) { this.details = details; }
-    public int getDifficulty() { return difficulty; }
-    public void setDifficulty(int difficulty) { this.difficulty = difficulty; }
+    public Integer getDifficulty() { return difficulty; }
+    public void setDifficulty(Integer difficulty) { this.difficulty = difficulty; }
 }
