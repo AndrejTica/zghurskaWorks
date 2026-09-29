@@ -159,15 +159,49 @@ class PortfolioManagementIntegrationTest {
                 .andExpect(content().string(containsString("★★★★☆")))
                 .andExpect(content().string(containsString("Upcoming")));
 
-        mockMvc.perform(post("/admin/exhibitions/{id}/delete", exhibition.getId()).with(csrf()))
+        LocalDate updatedStartDate = LocalDate.now().plusMonths(3);
+        LocalDate updatedEndDate = updatedStartDate.plusMonths(1);
+        mockMvc.perform(post("/admin/exhibitions/{id}", exhibition.getId())
+                        .param("title", "Echoes in Colour: Extended")
+                        .param("venue", "South Gallery")
+                        .param("startDate", updatedStartDate.toString())
+                        .param("endDate", updatedEndDate.toString())
+                        .param("details", "An expanded collection of abstract works.")
+                        .param("difficulty", "")
+                        .with(csrf()))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/admin"))
+                .andExpect(flash().attribute("success", "Exhibition updated."));
+
+        Exhibition updated = exhibitionRepository.findById(exhibition.getId()).orElseThrow();
+        assertThat(updated.getTitle()).isEqualTo("Echoes in Colour: Extended");
+        assertThat(updated.getVenue()).isEqualTo("South Gallery");
+        assertThat(updated.getStartDate()).isEqualTo(updatedStartDate);
+        assertThat(updated.getEndDate()).isEqualTo(updatedEndDate);
+        assertThat(updated.getDetails()).isEqualTo("An expanded collection of abstract works.");
+        assertThat(updated.getDifficulty()).isNull();
+
+        mockMvc.perform(get("/admin"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Echoes in Colour: Extended")))
+                .andExpect(content().string(containsString("Save changes")));
+        mockMvc.perform(get("/"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Echoes in Colour: Extended")))
+                .andExpect(content().string(containsString("South Gallery")))
+                .andExpect(content().string(containsString("An expanded collection of abstract works.")))
+                .andExpect(content().string(not(containsString("A new collection of abstract works."))))
+                .andExpect(content().string(not(containsString("★★★★☆"))));
+
+        mockMvc.perform(post("/admin/exhibitions/{id}/delete", updated.getId()).with(csrf()))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/admin"))
                 .andExpect(flash().attribute("success", "Exhibition deleted."));
 
-        assertThat(exhibitionRepository.findById(exhibition.getId())).isEmpty();
+        assertThat(exhibitionRepository.findById(updated.getId())).isEmpty();
         mockMvc.perform(get("/"))
                 .andExpect(status().isOk())
-                .andExpect(content().string(not(containsString("Echoes in Colour"))));
+                .andExpect(content().string(not(containsString("Echoes in Colour: Extended"))));
     }
 
     @Test

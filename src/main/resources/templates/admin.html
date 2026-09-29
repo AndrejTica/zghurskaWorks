@@ -148,7 +148,45 @@
         <div><strong th:text="${item.title}"></strong><small th:text="${item.venue + ' · ' + #temporals.format(item.startDate, 'dd MMM yyyy')}"></small></div>
         <span class="stars" th:if="${item.difficulty != null}"
               th:text="${#strings.repeat('★', item.difficulty) + #strings.repeat('☆', 5 - item.difficulty)}"></span>
-        <form th:action="@{'/admin/exhibitions/' + ${item.id} + '/delete'}" method="post"><button class="delete" type="submit">Delete</button></form>
+        <div class="record-actions">
+          <details class="record-editor">
+            <summary>Edit</summary>
+            <form th:action="@{'/admin/exhibitions/' + ${item.id}}" method="post">
+              <label th:for="'edit-exhibition-title-' + ${item.id}">Title</label>
+              <input th:id="'edit-exhibition-title-' + ${item.id}" name="title" th:value="${item.title}"
+                     required maxlength="150">
+              <label th:for="'edit-venue-' + ${item.id}">Venue</label>
+              <input th:id="'edit-venue-' + ${item.id}" name="venue" th:value="${item.venue}"
+                     required maxlength="150">
+              <div class="date-row">
+                <div>
+                  <label th:for="'edit-start-date-' + ${item.id}">Starts</label>
+                  <input th:id="'edit-start-date-' + ${item.id}" name="startDate" type="date"
+                         th:value="${item.startDate}" required>
+                </div>
+                <div>
+                  <label th:for="'edit-end-date-' + ${item.id}">Ends</label>
+                  <input th:id="'edit-end-date-' + ${item.id}" name="endDate" type="date"
+                         th:value="${item.endDate}" required>
+                </div>
+              </div>
+              <label th:for="'edit-details-' + ${item.id}">Details</label>
+              <textarea th:id="'edit-details-' + ${item.id}" name="details" rows="4" required maxlength="2000"
+                        th:text="${item.details}"></textarea>
+              <label th:for="'edit-difficulty-' + ${item.id}">Difficulty</label>
+              <select th:id="'edit-difficulty-' + ${item.id}" name="difficulty">
+                <option value="" th:selected="${item.difficulty == null}">No difficulty</option>
+                <option value="1" th:selected="${item.difficulty == 1}">★☆☆☆☆</option>
+                <option value="2" th:selected="${item.difficulty == 2}">★★☆☆☆</option>
+                <option value="3" th:selected="${item.difficulty == 3}">★★★☆☆</option>
+                <option value="4" th:selected="${item.difficulty == 4}">★★★★☆</option>
+                <option value="5" th:selected="${item.difficulty == 5}">★★★★★</option>
+              </select>
+              <button class="primary" type="submit">Save changes</button>
+            </form>
+          </details>
+          <form th:action="@{'/admin/exhibitions/' + ${item.id} + '/delete'}" method="post"><button class="delete" type="submit">Delete</button></form>
+        </div>
       </article>
     </section>
   </main>

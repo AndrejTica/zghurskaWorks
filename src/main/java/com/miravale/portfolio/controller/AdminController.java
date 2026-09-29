@@ -262,6 +262,36 @@ public class AdminController {
         return "redirect:/admin";
     }
 
+    @PostMapping("/admin/exhibitions/{id}")
+    String updateExhibition(
+            @PathVariable Long id,
+            @Valid @ModelAttribute Exhibition changes,
+            BindingResult bindingResult,
+            RedirectAttributes redirectAttributes) {
+        Exhibition exhibition = exhibitionRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Exhibition not found."));
+        if (changes.getStartDate() != null && changes.getEndDate() != null
+                && changes.getEndDate().isBefore(changes.getStartDate())) {
+            bindingResult.rejectValue("endDate", "date.order", "End date must be on or after the start date.");
+        }
+        if (bindingResult.hasErrors()) {
+            redirectAttributes.addFlashAttribute(
+                    "error",
+                    "Exhibition was not updated. Please complete all fields and check the dates.");
+            return "redirect:/admin";
+        }
+
+        exhibition.setTitle(changes.getTitle());
+        exhibition.setVenue(changes.getVenue());
+        exhibition.setStartDate(changes.getStartDate());
+        exhibition.setEndDate(changes.getEndDate());
+        exhibition.setDetails(changes.getDetails());
+        exhibition.setDifficulty(changes.getDifficulty());
+        exhibitionRepository.save(exhibition);
+        redirectAttributes.addFlashAttribute("success", "Exhibition updated.");
+        return "redirect:/admin";
+    }
+
     private void addLists(Model model) {
         model.addAttribute("artworks", artworkRepository.findAll());
         model.addAttribute("exhibitions", exhibitionRepository.findAllByOrderByStartDateAsc());
