@@ -3,6 +3,7 @@ package com.miravale.portfolio.model;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Column;
+import jakarta.persistence.ManyToOne;
 
 @Entity
 public class SiteSettings {
@@ -26,6 +27,9 @@ public class SiteSettings {
     @Column(length = 500)
     private String studioAddress;
 
+    @ManyToOne
+    private ArtCollection highlightedCollection;
+
     public Long getId() { return id; }
     public String getHeroImageFilename() { return heroImageFilename; }
     public void setHeroImageFilename(String heroImageFilename) { this.heroImageFilename = heroImageFilename; }
@@ -37,4 +41,8 @@ public class SiteSettings {
     public void setLandingPageSlogan(String landingPageSlogan) { this.landingPageSlogan = landingPageSlogan; }
     public String getStudioAddress() { return studioAddress; }
     public void setStudioAddress(String studioAddress) { this.studioAddress = studioAddress; }
+    public ArtCollection getHighlightedCollection() { return highlightedCollection; }
+    public void setHighlightedCollection(ArtCollection highlightedCollection) {
+        this.highlightedCollection = highlightedCollection;
+    }
 }

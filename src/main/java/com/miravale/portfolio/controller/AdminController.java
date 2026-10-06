@@ -1,17 +1,22 @@
 package com.miravale.portfolio.controller;
 
 import com.miravale.portfolio.model.Artwork;
+import com.miravale.portfolio.model.ArtCollection;
 import com.miravale.portfolio.model.Exhibition;
 import com.miravale.portfolio.model.SiteSettings;
 import com.miravale.portfolio.repository.ArtworkRepository;
+import com.miravale.portfolio.repository.ArtCollectionRepository;
 import com.miravale.portfolio.repository.ExhibitionRepository;
 import com.miravale.portfolio.repository.SiteSettingsRepository;
 import com.miravale.portfolio.service.ImageStorageService;
+import com.miravale.portfolio.service.CollectionService;
 import jakarta.validation.Valid;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.StringUtils;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.WebDataBinder;
+import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -26,16 +31,27 @@ public class AdminController {
     private final ExhibitionRepository exhibitionRepository;
     private final SiteSettingsRepository siteSettingsRepository;
     private final ImageStorageService imageStorageService;
+    private final ArtCollectionRepository collectionRepository;
+    private final CollectionService collectionService;
 
     public AdminController(
             ArtworkRepository artworkRepository,
             ExhibitionRepository exhibitionRepository,
             SiteSettingsRepository siteSettingsRepository,
-            ImageStorageService imageStorageService) {
+            ImageStorageService imageStorageService,
+            ArtCollectionRepository collectionRepository,
+            CollectionService collectionService) {
         this.artworkRepository = artworkRepository;
         this.exhibitionRepository = exhibitionRepository;
         this.siteSettingsRepository = siteSettingsRepository;
         this.imageStorageService = imageStorageService;
+        this.collectionRepository = collectionRepository;
+        this.collectionService = collectionService;
+    }
+
+    @InitBinder("artwork")
+    void artworkFields(WebDataBinder binder) {
+        binder.setAllowedFields("title", "description", "createdDate", "commissioned");
     }
 
     @GetMapping("/admin")
@@ -55,8 +71,15 @@ public class AdminController {
             @Valid @ModelAttribute Artwork artwork,
             BindingResult bindingResult,
             @RequestParam("image") MultipartFile image,
+            @RequestParam(required = false) Long collectionId,
             Model model,
             RedirectAttributes redirectAttributes) {
+        model.addAttribute("selectedCollectionId", collectionId);
+        try {
+            artwork.setCollection(collectionService.findCollection(collectionId));
+        } catch (IllegalArgumentException exception) {
+            bindingResult.reject("collection.invalid", exception.getMessage());
+        }
         if (image.isEmpty()) {
             bindingResult.rejectValue("imageFilename", "image.required", "Please choose an image.");
         }
@@ -78,7 +101,7 @@ public class AdminController {
 
         artwork.setImageFilename(filename);
         try {
-            artworkRepository.save(artwork);
+            collectionService.saveArtwork(artwork);
         } catch (RuntimeException exception) {
             imageStorageService.delete(filename);
             throw exception;
@@ -193,7 +216,7 @@ public class AdminController {
             redirectAttributes.addFlashAttribute("error", "Artwork no longer exists.");
             return "redirect:/admin";
         }
-        artworkRepository.delete(artwork);
+        boolean previewCleared = collectionService.deleteArtwork(artwork);
         try {
             imageStorageService.delete(artwork.getImageFilename());
         } catch (IllegalArgumentException | IllegalStateException exception) {
@@ -202,7 +225,7 @@ public class AdminController {
                     "Artwork deleted, but its image file could not be removed.");
             return "redirect:/admin";
         }
-        redirectAttributes.addFlashAttribute("success", "Artwork deleted.");
+        redirectAttributes.addFlashAttribute("success", "Artwork deleted." + previewNotice(previewCleared));
         return "redirect:/admin";
     }
 
@@ -212,6 +235,7 @@ public class AdminController {
             @Valid @ModelAttribute Artwork changes,
             BindingResult bindingResult,
             @RequestParam(value = "image", required = false) MultipartFile image,
+            @RequestParam(required = false) Long collectionId,
             RedirectAttributes redirectAttributes) {
         Artwork artwork = artworkRepository.findById(id).orElse(null);
         if (artwork == null) {
@@ -222,6 +246,14 @@ public class AdminController {
             redirectAttributes.addFlashAttribute(
                     "error",
                     "Artwork was not updated. Please complete all fields and check their lengths.");
+            return "redirect:/admin";
+        }
+
+        ArtCollection collection;
+        try {
+            collection = collectionService.findCollection(collectionId);
+        } catch (IllegalArgumentException exception) {
+            redirectAttributes.addFlashAttribute("error", exception.getMessage());
             return "redirect:/admin";
         }
 
@@ -240,12 +272,14 @@ public class AdminController {
         artwork.setDescription(changes.getDescription());
         artwork.setCreatedDate(changes.getCreatedDate());
         artwork.setCommissioned(changes.isCommissioned());
+        artwork.setCollection(collection);
         if (newFilename != null) {
             artwork.setImageFilename(newFilename);
         }
 
+        boolean previewCleared;
         try {
-            artworkRepository.save(artwork);
+            previewCleared = collectionService.saveArtwork(artwork);
         } catch (RuntimeException exception) {
             imageStorageService.delete(newFilename);
             throw exception;
@@ -261,7 +295,7 @@ public class AdminController {
                 return "redirect:/admin";
             }
         }
-        redirectAttributes.addFlashAttribute("success", "Artwork updated.");
+        redirectAttributes.addFlashAttribute("success", "Artwork updated." + previewNotice(previewCleared));
         return "redirect:/admin";
     }
 
@@ -310,9 +344,14 @@ public class AdminController {
     }
 
     private void addLists(Model model) {
+        if (!model.containsAttribute("artCollection")) {
+            model.addAttribute("artCollection", new ArtCollection());
+        }
+        model.addAttribute("collections", collectionRepository.findAllByOrderByNameAscIdAsc());
         model.addAttribute("artworks", artworkRepository.findAll());
         model.addAttribute("exhibitions", exhibitionRepository.findAllByOrderByStartDateAsc());
         SiteSettings settings = siteSettingsRepository.findById(SiteSettings.ID).orElseGet(SiteSettings::new);
+        model.addAttribute("highlightedCollection", settings.getHighlightedCollection());
         model.addAttribute("heroImageFilename", settings.getHeroImageFilename());
         if (!model.containsAttribute("landingPageSlogan")) {
             model.addAttribute(
@@ -335,6 +374,10 @@ public class AdminController {
                             ? settings.getStudioAddress()
                             : SiteSettings.DEFAULT_STUDIO_ADDRESS);
         }
+    }
+
+    private String previewNotice(boolean previewCleared) {
+        return previewCleared ? " Collection preview cleared; please choose a new preview in Collections." : "";
     }
 
     private void addLandingContentError(

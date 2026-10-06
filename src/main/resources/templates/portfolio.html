@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="The portfolio, exhibitions, and contact details of visual artist Anna Zghurska.">
-  <title>Anna Zghurska — Visual Artist</title>
+  <title th:text="${selectedCollection != null ? selectedCollection.name + ' — Anna Zghurska' : 'Anna Zghurska — Visual Artist'}">Anna Zghurska — Visual Artist</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Italiana&display=swap" rel="stylesheet">
@@ -12,19 +12,23 @@
 </head>
 <body>
   <header class="site-header">
-    <a class="logo" href="#works" aria-label="Anna Zghurska home">Anna Zghurska</a>
+    <a class="logo" th:href="@{/#works}" data-tab="works" aria-label="Anna Zghurska home">Anna Zghurska</a>
     <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="main-nav">
       <span></span><span></span><span class="sr-only">Toggle menu</span>
     </button>
     <nav id="main-nav" class="main-nav" aria-label="Main navigation">
-      <button class="nav-link active" type="button" data-tab="works" aria-selected="true">Works</button>
-      <button class="nav-link" type="button" data-tab="commissions" aria-selected="false">Commissions</button>
-      <button class="nav-link" type="button" data-tab="exhibitions" aria-selected="false">Exhibitions</button>
-      <button class="nav-link" type="button" data-tab="contact" aria-selected="false">Contact</button>
+      <a class="nav-link" th:classappend="${selectedCollection == null ? 'active' : ''}"
+         th:href="@{/#works}" data-tab="works" th:aria-current="${selectedCollection == null ? 'page' : null}">Works</a>
+      <a class="nav-link" th:classappend="${selectedCollection != null ? 'active' : ''}"
+         th:href="@{/#collections}" data-tab="collections" th:aria-current="${selectedCollection != null ? 'page' : null}">Collections</a>
+      <a class="nav-link" th:href="@{/#commissions}" data-tab="commissions">Commissions</a>
+      <a class="nav-link" th:href="@{/#exhibitions}" data-tab="exhibitions">Exhibitions</a>
+      <a class="nav-link" th:href="@{/#contact}" data-tab="contact">Contact</a>
     </nav>
   </header>
 
   <main>
+    <th:block th:if="${selectedCollection == null}">
     <section id="works" class="tab-panel active" aria-labelledby="works-heading">
       <div class="hero">
         <div class="hero-copy">
@@ -33,7 +37,7 @@
 in</span><em th:classappend="${sloganEmphasisOnNewLine ? 'new-line' : (!sloganHasLead ? 'only-word' : '')}"
              th:text="${landingPageSloganEmphasis}">motion.</em></h1>
           <p class="intro" th:text="${landingPageDescription}">Anna Zghurska explores memory, place, and the quiet tension between natural and constructed worlds.</p>
-          <a class="text-link" href="#gallery">Selected works <span>↓</span></a>
+          <a class="text-link" href="#gallery">Highlighted collection <span>↓</span></a>
         </div>
         <div class="hero-art artwork artwork-hero" role="img" aria-label="Abstract artwork in cobalt blue and warm orange"
              th:if="${heroImageFilename == null}">
@@ -43,7 +47,13 @@ in</span><em th:classappend="${sloganEmphasisOnNewLine ? 'new-line' : (!sloganHa
           <img th:src="@{'/uploads/' + ${heroImageFilename}}" alt="Featured artwork" fetchpriority="high">
         </div>
       </div>
-      <div id="gallery" class="gallery-heading"><h2>Selected works</h2><p>Archive</p></div>
+      <div id="gallery" class="gallery-heading">
+        <h2 th:text="${highlightedCollection != null ? highlightedCollection.name : 'Highlighted collection'}">Highlighted collection</h2>
+        <a th:if="${highlightedCollection != null}" class="text-link"
+           th:href="@{/collections/{id}(id=${highlightedCollection.id})}">View collection</a>
+      </div>
+      <p class="intro collection-description" th:if="${highlightedCollection != null}"
+         th:text="${highlightedCollection.description}"></p>
       <div class="gallery-grid">
         <p class="empty-state" th:if="${works.empty}">New work is being prepared. Please visit again soon.</p>
         <article class="work-card" th:each="work : ${works}">
@@ -53,6 +63,24 @@ in</span><em th:classappend="${sloganEmphasisOnNewLine ? 'new-line' : (!sloganHa
             <p><span th:text="${work.description}">Description</span><br><span th:text="${#temporals.format(work.createdDate, 'yyyy')}">2026</span></p>
           </div>
         </article>
+      </div>
+    </section>
+
+    <section id="collections" class="tab-panel" aria-labelledby="collections-heading" hidden>
+      <div class="page-intro">
+        <p class="eyebrow">Explore the archive</p>
+        <h1 id="collections-heading"><em>Collections.</em></h1>
+      </div>
+      <div class="collection-list">
+        <p class="empty-state" th:if="${collections.empty}">Collections are being prepared. Please visit again soon.</p>
+        <a class="collection-card" th:each="collection : ${collections}"
+           th:href="@{/collections/{id}(id=${collection.id})}">
+          <h2 th:text="${collection.name}"></h2>
+          <img th:if="${collection.previewArtwork != null}"
+               th:src="@{'/uploads/' + ${collection.previewArtwork.imageFilename}}"
+               th:alt="${collection.previewArtwork.title}" loading="lazy" decoding="async">
+          <span class="collection-placeholder" th:if="${collection.previewArtwork == null}">Preview coming soon</span>
+        </a>
       </div>
     </section>
 
@@ -116,6 +144,24 @@ in</span><em th:classappend="${sloganEmphasisOnNewLine ? 'new-line' : (!sloganHa
           <p class="form-status form-error" th:if="${contactError}" role="alert" th:text="${contactError}"></p>
         </form>
         <p class="contact-form-unavailable" th:unless="${contactEmailEnabled}">The contact form is currently unavailable. Please use the email address shown above.</p>
+      </div>
+    </section>
+    </th:block>
+    <section class="collection-detail" th:if="${selectedCollection != null}" aria-labelledby="collection-heading">
+      <div class="page-intro">
+        <a class="text-link" th:href="@{/#collections}">Back to collections</a>
+        <h1 id="collection-heading" th:text="${selectedCollection.name}"></h1>
+        <p class="intro collection-description" th:text="${selectedCollection.description}"></p>
+      </div>
+      <div class="gallery-grid">
+        <p class="empty-state" th:if="${collectionWorks.empty}">Artworks will be added to this collection soon.</p>
+        <article class="work-card" th:each="work : ${collectionWorks}">
+          <div class="artwork"><img class="artwork-image" th:src="@{'/uploads/' + ${work.imageFilename}}" th:alt="${work.title}" loading="lazy" decoding="async"></div>
+          <div class="work-meta">
+            <h3 th:text="${work.title}"></h3>
+            <p><span th:text="${work.description}"></span><br><span th:text="${#temporals.format(work.createdDate, 'yyyy')}"></span></p>
+          </div>
+        </article>
       </div>
     </section>
   </main>

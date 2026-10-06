@@ -1,6 +1,14 @@
 # Artist Portfolio
 
-A Spring Boot portfolio with a public artwork, commission, and exhibition site plus a protected studio admin page.
+A Spring Boot portfolio with public artwork collections, commissions, and exhibitions plus a protected studio admin page.
+
+## Manage collections
+
+In `/admin`, create a collection with a name and description. Use the collection selector when adding or editing an artwork to assign it to one collection (or leave it unassigned). Edit the collection to choose one of its assigned artworks as the preview shown beside its name in the public **Collections** tab. Visitors can open a collection to read its description and browse all its artworks.
+
+Choose the **Highlighted collection** in the manager to control the homepage gallery. Only artworks in that collection appear there, including commissioned artworks assigned to it. The separate **Commissions** tab continues to show all commissioned works. Without a highlighted collection, the homepage gallery displays an empty state; existing artworks are retained and remain unassigned until you categorize them. The landing-page hero image remains independently configurable.
+
+Deleting a collection keeps its artworks and uploaded images, removes their collection assignment, and clears the homepage highlight if necessary. Moving or deleting a preview artwork clears that collection's preview and prompts you to select a replacement. Collections without a preview display a placeholder.
 
 ## Host with Docker
 

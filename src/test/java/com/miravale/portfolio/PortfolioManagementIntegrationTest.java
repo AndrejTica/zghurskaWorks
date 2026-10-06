@@ -94,8 +94,8 @@ class PortfolioManagementIntegrationTest {
                 .andExpect(content().string(containsString("Save changes")));
         mockMvc.perform(get("/"))
                 .andExpect(status().isOk())
-                .andExpect(content().string(containsString("Blue Morning")))
-                .andExpect(content().string(containsString("Oil and pigment on linen")));
+                .andExpect(content().string(not(containsString("Blue Morning"))))
+                .andExpect(content().string(not(containsString("Oil and pigment on linen"))));
 
         MockMultipartFile replacementImage = new MockMultipartFile(
                 "image", "replacement.webp", "image/webp", "replacement image".getBytes());

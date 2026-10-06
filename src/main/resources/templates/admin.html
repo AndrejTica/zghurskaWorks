@@ -57,10 +57,37 @@
       </form>
     </section>
 
+    <section class="description-settings">
+      <h2>Highlighted collection</h2>
+      <p class="muted">Only this collection's artworks appear on the main page. The Commissions tab stays separate.</p>
+      <form th:action="@{/admin/highlighted-collection}" method="post">
+        <label for="highlighted-collection">Collection to feature</label>
+        <select id="highlighted-collection" name="collectionId">
+          <option value="">No highlighted collection</option>
+          <option th:each="collection : ${collections}" th:value="${collection.id}" th:text="${collection.name}"
+                  th:selected="${highlightedCollection != null && highlightedCollection.id == collection.id}"></option>
+        </select>
+        <button class="primary" type="submit">Update highlighted collection</button>
+      </form>
+    </section>
+
+    <section class="description-settings">
+      <h2>Add collection</h2>
+      <p class="muted">Create a collection, assign artworks using their artwork forms, then edit the collection to choose its preview.</p>
+      <form th:action="@{/admin/collections}" th:object="${artCollection}" method="post">
+        <label for="collection-name">Name</label>
+        <input id="collection-name" th:field="*{name}" required maxlength="150">
+        <label for="collection-description">Description</label>
+        <textarea id="collection-description" th:field="*{description}" rows="4" required maxlength="2000"></textarea>
+        <button class="primary" type="submit">Add collection</button>
+      </form>
+    </section>
+
     <div class="forms">
       <section>
         <h2>Add artwork</h2>
         <form th:action="@{/admin/artworks}" th:object="${artwork}" method="post" enctype="multipart/form-data">
+          <p class="error" th:each="error : ${#fields.globalErrors()}" th:text="${error}"></p>
           <label for="art-title">Title</label>
           <input id="art-title" th:field="*{title}" required maxlength="150">
           <p class="error" th:errors="*{title}"></p>
@@ -73,6 +100,12 @@
           <label for="image">Image</label>
           <input id="image" type="file" name="image" accept="image/jpeg,image/png,image/webp,image/gif" required>
           <p class="error" th:errors="*{imageFilename}"></p>
+          <label for="art-collection">Collection</label>
+          <select id="art-collection" name="collectionId">
+            <option value="">No collection</option>
+            <option th:each="collection : ${collections}" th:value="${collection.id}" th:text="${collection.name}"
+                    th:selected="${selectedCollectionId != null && selectedCollectionId == collection.id}"></option>
+          </select>
           <label class="check"><input type="checkbox" th:field="*{commissioned}"> This is a commissioned work</label>
           <button class="primary" type="submit">Add artwork</button>
         </form>
@@ -108,6 +141,49 @@
       </section>
     </div>
 
+    <section class="records" id="collections">
+      <h2>Collections</h2>
+      <p th:if="${collections.empty}" class="muted">No collections added yet.</p>
+      <p class="muted">Deleting a collection keeps its artworks. Moving or deleting a preview artwork clears that collection's preview.</p>
+      <article th:each="collection : ${collections}">
+        <img th:if="${collection.previewArtwork != null}"
+             th:src="@{'/uploads/' + ${collection.previewArtwork.imageFilename}}"
+             th:alt="${collection.previewArtwork.title}" loading="lazy">
+        <div>
+          <strong th:text="${collection.name}"></strong>
+          <small th:if="${highlightedCollection != null && highlightedCollection.id == collection.id}">Highlighted on the main page</small>
+          <small th:if="${collection.previewArtwork == null}">No preview selected</small>
+          <a th:href="@{/collections/{id}(id=${collection.id})}">View collection</a>
+        </div>
+        <div class="record-actions">
+          <details class="record-editor">
+            <summary>Edit</summary>
+            <form th:action="@{/admin/collections/{id}(id=${collection.id})}" method="post">
+              <label th:for="'edit-collection-name-' + ${collection.id}">Name</label>
+              <input th:id="'edit-collection-name-' + ${collection.id}" name="name"
+                     th:value="${collection.name}" required maxlength="150">
+              <label th:for="'edit-collection-description-' + ${collection.id}">Description</label>
+              <textarea th:id="'edit-collection-description-' + ${collection.id}" name="description"
+                        rows="4" required maxlength="2000" th:text="${collection.description}"></textarea>
+              <label th:for="'edit-collection-preview-' + ${collection.id}">Preview artwork</label>
+              <select th:id="'edit-collection-preview-' + ${collection.id}" name="previewArtworkId">
+                <option value="">No preview selected</option>
+                <option th:each="item : ${artworks}"
+                        th:if="${item.collection != null && item.collection.id == collection.id}"
+                        th:value="${item.id}" th:text="${item.title}"
+                        th:selected="${collection.previewArtwork != null && collection.previewArtwork.id == item.id}"></option>
+              </select>
+              <p class="muted">Only artworks assigned to this collection can be its preview.</p>
+              <button class="primary" type="submit">Save collection</button>
+            </form>
+          </details>
+          <form th:action="@{/admin/collections/{id}/delete(id=${collection.id})}" method="post">
+            <button class="delete" type="submit">Delete collection</button>
+          </form>
+        </div>
+      </article>
+    </section>
+
     <section class="records">
       <h2>Artworks</h2>
       <p th:if="${artworks.empty}" class="muted">No artworks added yet.</p>
@@ -129,6 +205,12 @@
               <label th:for="'edit-image-' + ${item.id}">Replace image (optional)</label>
               <input th:id="'edit-image-' + ${item.id}" name="image" type="file"
                      accept="image/jpeg,image/png,image/webp,image/gif">
+              <label th:for="'edit-art-collection-' + ${item.id}">Collection</label>
+              <select th:id="'edit-art-collection-' + ${item.id}" name="collectionId">
+                <option value="">No collection</option>
+                <option th:each="collection : ${collections}" th:value="${collection.id}" th:text="${collection.name}"
+                        th:selected="${item.collection != null && item.collection.id == collection.id}"></option>
+              </select>
               <label class="check">
                 <input name="commissioned" type="checkbox" value="true" th:checked="${item.commissioned}">
                 This is a commissioned work

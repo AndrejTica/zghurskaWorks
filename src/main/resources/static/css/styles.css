@@ -43,7 +43,7 @@ button, input, textarea { font: inherit; }
   font-size: 1.75rem;
   text-decoration: none;
 }
-.main-nav { display: flex; gap: 2.5rem; }
+.main-nav { display: flex; gap: clamp(1rem, 2.5vw, 2.5rem); }
 .nav-link {
   position: relative;
   border: 0;
@@ -220,6 +220,25 @@ h1 em { font-weight: 400; color: var(--accent); }
 
 .page-intro { padding: 10vw 0 7vw; }
 .page-intro h1 { font-size: clamp(4rem, 9vw, 9rem); }
+.collection-description { max-width: 48rem; white-space: pre-line; overflow-wrap: anywhere; }
+.collection-list { padding-bottom: 8vw; border-top: 1px solid var(--ink); }
+.collection-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(120px, 35%);
+  gap: 2rem;
+  align-items: center;
+  padding: 2rem 0;
+  border-bottom: 1px solid var(--line);
+  text-decoration: none;
+}
+.collection-card h2 { margin: 0; font: clamp(2rem, 5vw, 5rem)/1.1 var(--serif); overflow-wrap: anywhere; }
+.collection-card img, .collection-placeholder { width: 100%; aspect-ratio: 4 / 3; object-fit: contain; background: #e7e4db; }
+.collection-placeholder { display: grid; place-items: center; padding: 1rem; color: #77746a; text-align: center; }
+.collection-card:hover h2 { color: var(--accent); }
+.collection-card:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+.collection-detail .text-link { margin-bottom: 3rem; }
+.collection-detail h1, .gallery-heading h2 { overflow-wrap: anywhere; }
+.gallery-heading { gap: 1.5rem; flex-wrap: wrap; }
 .exhibition-list { padding-bottom: 8vw; border-top: 1px solid var(--ink); }
 .exhibition {
   display: grid;
@@ -369,6 +388,9 @@ footer div { display: flex; gap: 2rem; }
   .work-meta { display: block; }
   .work-meta p { margin-top: .35rem; text-align: left; }
   .page-intro { padding: 7rem 0 4rem; }
+  .collection-card { gap: 1rem; grid-template-columns: minmax(0, 1fr) 38%; }
+  .collection-card h2 { font-size: clamp(1.5rem, 6vw, 2.5rem); }
+  .collection-placeholder { font-size: .8rem; padding: .5rem; }
   .exhibition { grid-template-columns: 1fr auto; gap: 1rem; }
   .exhibition time { grid-column: 1 / -1; }
   .contact-layout { grid-template-columns: 1fr; gap: 1rem; padding: 7rem 0 4rem; }

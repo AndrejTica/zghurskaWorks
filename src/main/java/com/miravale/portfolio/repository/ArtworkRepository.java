@@ -7,4 +7,5 @@ import java.util.List;
 
 public interface ArtworkRepository extends JpaRepository<Artwork, Long> {
     List<Artwork> findByCommissionedOrderByCreatedDateDesc(boolean commissioned);
+    List<Artwork> findByCollectionIdOrderByCreatedDateDescIdDesc(Long collectionId);
 }

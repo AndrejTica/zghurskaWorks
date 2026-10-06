@@ -4,6 +4,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.ManyToOne;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -32,6 +34,9 @@ public class Artwork {
 
     private boolean commissioned;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    private ArtCollection collection;
+
     public Long getId() { return id; }
     public String getTitle() { return title; }
     public void setTitle(String title) { this.title = title; }
@@ -43,4 +48,6 @@ public class Artwork {
     public void setImageFilename(String imageFilename) { this.imageFilename = imageFilename; }
     public boolean isCommissioned() { return commissioned; }
     public void setCommissioned(boolean commissioned) { this.commissioned = commissioned; }
+    public ArtCollection getCollection() { return collection; }
+    public void setCollection(ArtCollection collection) { this.collection = collection; }
 }

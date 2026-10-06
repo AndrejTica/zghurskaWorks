@@ -10,10 +10,17 @@ function setMenuOpen(isOpen) {
 }
 
 function showTab(tabId, updateHistory = true) {
+  if (!document.getElementById(tabId)?.classList.contains("tab-panel")) {
+    return;
+  }
   navLinks.forEach((link) => {
     const isActive = link.dataset.tab === tabId;
     link.classList.toggle("active", isActive);
-    link.setAttribute("aria-selected", String(isActive));
+    if (isActive) {
+      link.setAttribute("aria-current", "page");
+    } else {
+      link.removeAttribute("aria-current");
+    }
   });
 
   panels.forEach((panel) => {
@@ -31,14 +38,13 @@ function showTab(tabId, updateHistory = true) {
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
-navLinks.forEach((link) => {
-  link.addEventListener("click", () => showTab(link.dataset.tab));
-});
-
-document.querySelectorAll('a[href="#works"]').forEach((link) => {
+document.querySelectorAll("a[data-tab]").forEach((link) => {
   link.addEventListener("click", (event) => {
-    event.preventDefault();
-    showTab("works");
+    if (!event.ctrlKey && !event.metaKey && !event.shiftKey && !event.altKey
+        && document.getElementById(link.dataset.tab)?.classList.contains("tab-panel")) {
+      event.preventDefault();
+      showTab(link.dataset.tab);
+    }
   });
 });
 
@@ -60,10 +66,7 @@ window.addEventListener("resize", () => {
 });
 
 window.addEventListener("popstate", () => {
-  const tabId = location.hash.slice(1);
-  if (document.getElementById(tabId)?.classList.contains("tab-panel")) {
-    showTab(tabId, false);
-  }
+  showTab(location.hash.slice(1) || "works", false);
 });
 
 const initialTab = location.hash.slice(1);
